@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+
+  <meta name="google-site-verification"
+        content="_6O2xl7AM_aahM0OhaaIPGWBKfo8fPX2mkRubOv99HQ" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>ClueWell-Mail — Email Threat Analyzer</title>
+
+  <meta
+    name="description"
+    content="ClueWell-Mail is an email threat analyzer designed to detect potential phishing and suspicious email threats."
+  >
+
+  <meta
+    name="keywords"
+    content="ClueWell-Mail, phishing detection, email threat analyzer, phishing email detector, cybersecurity, AI security"
+  >
+
+  <meta name="author" content="Vansh Arora">
+  <meta name="robots" content="index, follow">
+
+  <link
+    rel="canonical"
+    href="https://cluewell-mail.netlify.app/"
+  >
+
+  <!-- Open Graph -->
+  <meta
+    property="og:title"
+    content="ClueWell-Mail — Email Threat Analyzer"
+  >
+
+  <meta
+    property="og:description"
+    content="Analyze emails and identify potential phishing and suspicious threats with ClueWell-Mail."
+  >
+
+  <meta property="og:type" content="website">
+
+  <meta
+    property="og:url"
+    content="https://cluewell-mail.netlify.app/"
+  >
+
+  <meta
+    property="og:image"
+    content="https://cluewell-mail.netlify.app/cluewell-mail-main.png"
+  >
+
+  <link
+    rel="icon"
+    type="image/png"
+    href="cluewell-mail.png"
+  >
+
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+  <!-- =========================
+       NAVBAR
+       ========================= -->
+
+  <header class="navbar">
+
+    <div class="navbar-inner">
+
+      <a href="index.html" class="brand">
+
+        <img
+          src="assests/cluewell-mail-main.png"
+          alt="ClueWell-Mail Logo"
+          class="brand-logo"
+        >
+
+        <span class="brand-name">
+          ClueWell<span class="brand-ai">-Mail</span>
+        </span>
+
+      </a>
+
+      <button
+        class="nav-toggle"
+        type="button"
+        aria-expanded="false"
+        aria-controls="primary-navigation"
+      >
+        <span class="sr-only">Toggle navigation</span>
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+
+      <nav
+        class="nav-links"
+        id="primary-navigation"
+        aria-label="Primary navigation"
+      >
+
+        <a
+          href="index.html"
+          aria-current="page"
+        >
+          Analyzer
+        </a>
+
+        <a href="about.html">
+          About
+        </a>
+
+      </nav>
+
+    </div>
+
+  </header>
+
+
+  <!-- =========================
+       MAIN CONTENT
+       ========================= -->
+
+  <main class="page">
+
+    <div class="page-header">
+
+      <h1>Email Threat Analyzer</h1>
+
+      <p>
+        Analyze an email for potential phishing threats.
+      </p>
+
+    </div>
+
+
+    <!-- =========================
+         EMAIL ANALYZER FORM
+         ========================= -->
+
+    <form id="analyzer-form" novalidate>
+
+      <div class="panel">
+
+        <h2>Email Details</h2>
+
+
+        <!-- Sender Email -->
+
+        <div class="field" id="field-sender">
+
+          <label for="sender-email">
+            Sender Email
+          </label>
+
+          <input
+            type="email"
+            id="sender-email"
+            name="sender-email"
+            placeholder="e.g. example@company.com"
+            autocomplete="off"
+          >
+
+        </div>
+
+
+        <!-- Email Subject -->
+
+        <div class="field" id="field-subject">
+
+          <label for="email-subject">
+            Email Subject
+          </label>
+
+          <input
+            type="text"
+            id="email-subject"
+            name="email-subject"
+            placeholder="e.g. Your account requires verification"
+            autocomplete="off"
+          >
+
+        </div>
+
+
+        <!-- Email Body -->
+
+        <div class="field" id="field-body">
+
+          <label for="email-body">
+            Email Body
+            <span class="required-star">*</span>
+          </label>
+
+          <textarea
+            id="email-body"
+            name="email-body"
+            placeholder="Paste the complete email content here..."
+            required
+          ></textarea>
+
+          <span
+            class="error-message"
+            id="error-body"
+          >
+            Please enter the email body before analyzing.
+          </span>
+
+        </div>
+
+
+        <!-- Form Note -->
+
+        <p class="form-note">
+          <span id="form-note-text"></span>
+        </p>
+
+
+        <!-- Buttons -->
+
+        <div class="btn-row">
+
+          <button
+            type="submit"
+            class="btn btn-primary"
+            id="analyze-btn"
+          >
+            Analyze Email
+          </button>
+
+          <button
+            type="button"
+            class="btn"
+            id="clear-btn"
+          >
+            Clear
+          </button>
+
+        </div>
+
+      </div>
+
+    </form>
+
+
+    <!-- =========================
+         HOW IT WORKS
+         ========================= -->
+
+    <a
+      href="demo.html"
+      target="_blank"
+      class="how-it-works"
+    >
+      ▶ Click to see how it works
+    </a>
+
+
+    <!-- =========================
+         ANALYSIS RESULT
+         ========================= -->
+
+    <section
+      class="panel"
+      id="result-panel"
+      aria-live="polite"
+    >
+
+      <h2>Analysis Result</h2>
+
+      <p
+        class="result-empty"
+        id="result-empty"
+      >
+        Analysis results will appear here.
+      </p>
+
+
+      <div
+        class="result-content"
+        id="result-content"
+      >
+
+        <!-- Verdict -->
+
+        <div
+          class="verdict-row"
+          id="verdict-row"
+        >
+
+          <div>
+
+            <p class="verdict-label">
+              Verdict
+            </p>
+
+            <p
+              class="verdict-value"
+              id="verdict-value"
+            >
+              —
+            </p>
+
+          </div>
+
+        </div>
+
+
+        <!-- Metrics -->
+
+        <div class="metric-grid">
+
+          <div class="metric-box">
+
+            <p class="metric-label">
+              Risk Score
+            </p>
+
+            <p
+              class="metric-value"
+              id="risk-score"
+            >
+              —
+            </p>
+
+          </div>
+
+
+          <div class="metric-box">
+
+            <p class="metric-label">
+              Confidence
+            </p>
+
+            <p
+              class="metric-value"
+              id="confidence-score"
+            >
+              —
+            </p>
+
+          </div>
+
+        </div>
+
+
+        <!-- Detection Reasons -->
+
+        <div class="subsection">
+
+          <h3>
+            Detection Reasons
+          </h3>
+
+          <ul
+            class="reason-list"
+            id="reason-list"
+          ></ul>
+
+        </div>
+
+
+        <!-- URL Analysis -->
+
+        <div class="subsection">
+
+          <h3>
+            URL Analysis
+          </h3>
+
+          <div class="stat-line">
+
+            <span>
+              URLs detected
+            </span>
+
+            <span
+              class="stat-value"
+              id="urls-detected"
+            >
+              0
+            </span>
+
+          </div>
+
+
+          <div class="stat-line">
+
+            <span>
+              Suspicious URLs
+            </span>
+
+            <span
+              class="stat-value"
+              id="urls-suspicious"
+            >
+              0
+            </span>
+
+          </div>
+
+        </div>
+
+
+        <!-- Keyword Analysis -->
+
+        <div class="subsection">
+
+          <h3>
+            Keyword Analysis
+          </h3>
+
+          <div
+            class="keyword-list"
+            id="keyword-list"
+          ></div>
+
+        </div>
+
+
+        <!-- Report -->
+
+        <div class="report-row">
+
+          <p>
+            Report includes full analysis details and a disclaimer.
+          </p>
+
+          <button
+            type="button"
+            class="btn"
+            id="download-report-btn"
+          >
+            Download Report
+          </button>
+
+        </div>
+
+      </div>
+
+    </section>
+
+  </main>
+
+
+  <!-- =========================
+       FOOTER
+       ========================= -->
+
+  <footer class="site-footer">
+
+    <p>
+      &copy; 2026 ClueWell-Mail. All rights reserved.
+    </p>
+
+  </footer>
+
+
+  <!-- =========================
+       SCRIPTS
+       ========================= -->
+
+  <script
+    src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"
+  ></script>
+
+  <script src="script.js"></script>
+
+</body>
+
+</html>

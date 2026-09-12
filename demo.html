@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>ClueWell-Mail — How It Works</title>
+
+  <!-- Main Website CSS -->
+  <link rel="stylesheet" href="style.css">
+
+  <style>
+    /* ==============================
+       DEMO PAGE
+    ============================== */
+
+    .demo-page {
+      width: 100%;
+      min-height: auto;
+      display: flex;
+      justify-content: center;
+      padding: 25px 20px 50px;
+      box-sizing: border-box;
+    }
+
+    .demo-container {
+      width: 100%;
+      max-width: 1100px;
+      text-align: center;
+    }
+
+    /* ==============================
+       HEADER
+    ============================== */
+
+    .site-header .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .site-header .nav-links a {
+      display: inline-block !important;
+      padding: 0 !important;
+
+      border: none !important;
+      background: none !important;
+      border-radius: 0 !important;
+
+      color: #ffffff;
+      text-decoration: none;
+
+      font-size: 14px !important;
+      font-weight: 500;
+
+      line-height: normal;
+      white-space: nowrap;
+
+      transition: color 0.2s ease;
+    }
+
+    .site-header .nav-links a:hover {
+      color: #ff4d4d;
+    }
+
+    /* ==============================
+       HEADING
+    ============================== */
+
+    .demo-container h1 {
+      font-size: clamp(30px, 5vw, 42px);
+      margin: 0 0 10px;
+    }
+
+    /* ==============================
+       SUBTITLE
+    ============================== */
+
+    .demo-subtitle {
+      width: 100%;
+      max-width: 650px;
+      margin: 0 auto 25px;
+
+      color: #a7adb7;
+
+      font-size: clamp(14px, 2vw, 16px);
+      line-height: 1.6;
+    }
+
+    /* ==============================
+       VIDEO CONTAINER
+    ============================== */
+
+    .video-wrapper {
+      width: 100%;
+
+      background: #111720;
+
+      border: 1px solid #252d38;
+      border-radius: 16px;
+
+      padding: 10px;
+      box-sizing: border-box;
+
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+    }
+
+    .video-wrapper video {
+      width: 100%;
+      height: auto;
+
+      display: block;
+
+      border-radius: 10px;
+      background: #000;
+    }
+
+    /* ==============================
+       BACK BUTTON
+    ============================== */
+
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+
+      margin-top: 18px;
+      padding: 9px 16px;
+
+      border: 1px solid #303844;
+      border-radius: 7px;
+
+      color: #ffffff;
+      text-decoration: none;
+
+      font-size: 13px;
+      font-weight: 500;
+
+      transition: 0.2s ease;
+    }
+
+    .back-btn:hover {
+      border-color: #ff4d4d;
+      color: #ff4d4d;
+    }
+
+    /* ==============================
+       MOBILE
+    ============================== */
+
+    @media (max-width: 600px) {
+
+      .demo-page {
+        padding: 15px 12px 30px;
+      }
+
+      /* Keep About visible on mobile */
+
+      .site-header .nav-links {
+        display: flex !important;
+        position: static !important;
+
+        flex-direction: row !important;
+        align-items: center;
+
+        gap: 10px;
+      }
+
+      .site-header .nav-links a {
+        display: inline-block !important;
+
+        padding: 0 !important;
+
+        border: none !important;
+        background: none !important;
+        border-radius: 0 !important;
+
+        font-size: 13px !important;
+      }
+
+      .demo-container h1 {
+        font-size: 30px;
+        margin-bottom: 8px;
+      }
+
+      .demo-subtitle {
+        font-size: 14px;
+        line-height: 1.5;
+        margin-bottom: 18px;
+      }
+
+      .video-wrapper {
+        padding: 5px;
+        border-radius: 12px;
+      }
+
+      .video-wrapper video {
+        border-radius: 8px;
+      }
+
+      .back-btn {
+        margin-top: 15px;
+        padding: 8px 14px;
+        font-size: 12px;
+      }
+    }
+
+    /* ==============================
+       VERY SMALL DEVICES
+    ============================== */
+
+    @media (max-width: 380px) {
+
+      .demo-page {
+        padding-left: 10px;
+        padding-right: 10px;
+      }
+
+      .site-header .nav-links {
+        gap: 8px;
+      }
+
+      .site-header .nav-links a {
+        font-size: 12px !important;
+      }
+
+      .demo-container h1 {
+        font-size: 27px;
+      }
+
+      .demo-subtitle {
+        font-size: 13px;
+      }
+
+      .video-wrapper {
+        padding: 4px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- ==============================
+       HEADER
+  ============================== -->
+
+  <header class="site-header">
+
+    <div class="navbar-inner">
+
+      <a href="index.html" class="brand">
+
+        <img
+          src="assests/cluewell-mail-main.png"
+          alt="ClueWell-Mail Logo"
+          class="brand-logo"
+        >
+
+        <span class="brand-name">
+          ClueWell<span class="brand-ai">-Mail</span>
+        </span>
+
+      </a>
+
+      <nav
+        class="nav-links"
+        id="primary-navigation"
+        aria-label="Primary navigation"
+      >
+        <a href="about.html">About</a>
+      </nav>
+
+    </div>
+
+  </header>
+
+
+  <!-- ==============================
+       MAIN CONTENT
+  ============================== -->
+
+  <main class="demo-page">
+
+    <div class="demo-container">
+
+      <h1>
+        How It Works
+      </h1>
+
+      <p class="demo-subtitle">
+        Watch this short demonstration to see how ClueWell analyzes
+        an email and identifies potential phishing indicators.
+      </p>
+
+
+      <!-- ==============================
+           VIDEO
+      ============================== -->
+
+      <div class="video-wrapper">
+
+        <video
+          controls
+          preload="metadata"
+          playsinline
+        >
+
+          <source
+            src="assests/demo-video.mp4"
+            type="video/mp4"
+          >
+
+          Your browser does not support HTML5 video.
+
+        </video>
+
+      </div>
+
+
+      <!-- ==============================
+           BACK BUTTON
+      ============================== -->
+
+      <a
+        href="index.html"
+        class="back-btn"
+      >
+        ← Back to ClueWell
+      </a>
+
+    </div>
+
+  </main>
+
+</body>
+</html>
