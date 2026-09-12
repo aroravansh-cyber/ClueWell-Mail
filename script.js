@@ -1,16 +1,25 @@
+/* =========================================================
+   ClueWell Mail
+   Rule-Based Email Phishing, Spam & Legitimate Analyzer
+   ========================================================= */
+
 const form = document.getElementById("analyzer-form");
 const senderInput = document.getElementById("sender-email");
 const subjectInput = document.getElementById("email-subject");
 const bodyInput = document.getElementById("email-body");
+
 const clearBtn = document.getElementById("clear-btn");
 const downloadBtn = document.getElementById("download-report-btn");
 
 const resultEmpty = document.getElementById("result-empty");
 const resultContent = document.getElementById("result-content");
+
 const verdictRow = document.getElementById("verdict-row");
 const verdictValue = document.getElementById("verdict-value");
+
 const riskScoreEl = document.getElementById("risk-score");
 const confidenceScoreEl = document.getElementById("confidence-score");
+
 const reasonList = document.getElementById("reason-list");
 const urlsDetectedEl = document.getElementById("urls-detected");
 const urlsSuspiciousEl = document.getElementById("urls-suspicious");
@@ -19,694 +28,290 @@ const keywordList = document.getElementById("keyword-list");
 let lastAnalysis = null;
 
 
-/* =========================
-   ANALYZER EVENT LISTENERS
-   ========================= */
+/* =========================================================
+   KEYWORDS
+   ========================================================= */
+
+const phishingKeywords = [
+  "verify your account",
+  "verify account",
+  "confirm your account",
+  "confirm your identity",
+  "complete verification",
+  "security alert",
+  "security notice",
+  "unusual activity",
+  "suspicious activity",
+  "unrecognized login",
+  "unrecognized device",
+  "unauthorized access",
+  "account suspended",
+  "account locked",
+  "account blocked",
+  "account restricted",
+  "account terminated",
+  "action required",
+  "immediate action",
+  "update your information",
+  "update payment information",
+  "verify payment",
+  "confirm payment",
+  "reset your password",
+  "password expires",
+  "login attempt",
+  "secure your account",
+  "security verification",
+  "identity verification",
+  "account recovery",
+  "click here to verify",
+  "your account will be closed",
+  "your account will be deleted",
+  "failure to verify",
+  "complete the process",
+  "within 24 hours",
+  "within 48 hours"
+];
+
+const spamKeywords = [
+  "exclusive offer",
+  "special offer",
+  "limited offer",
+  "amazing offer",
+  "discount",
+  "big discount",
+  "free gift",
+  "claim your prize",
+  "you have won",
+  "congratulations",
+  "buy now",
+  "shop now",
+  "limited time",
+  "last chance",
+  "huge savings",
+  "best deal",
+  "deal of the day",
+  "promo code",
+  "coupon code",
+  "cashback",
+  "make money fast",
+  "work from home",
+  "earn money",
+  "cheap price",
+  "risk free",
+  "no investment",
+  "act fast",
+  "offer expires",
+  "subscribe now",
+  "get rich",
+  "free trial"
+];
+
+const urgencyKeywords = [
+  "urgent",
+  "immediately",
+  "act now",
+  "action required",
+  "final warning",
+  "last chance",
+  "expires today",
+  "respond immediately",
+  "within 24 hours",
+  "within 48 hours",
+  "do not delay",
+  "time sensitive",
+  "immediate response",
+  "as soon as possible"
+];
+
+const credentialKeywords = [
+  "login credentials",
+  "account credentials",
+  "username and password",
+  "enter your password",
+  "provide your password",
+  "security code",
+  "verification code",
+  "authentication code",
+  "one time password",
+  "otp",
+  "pin",
+  "credit card number",
+  "debit card number",
+  "bank account details",
+  "cvv",
+  "card details"
+];
+
+const brandVariants = [
+  "paypa1",
+  "pay-pal",
+  "micros0ft",
+  "micro-soft",
+  "amaz0n",
+  "amaz-on",
+  "g00gle",
+  "faceb00k",
+  "app1e",
+  "netfl1x",
+  "linkedln",
+  "dell-support",
+  "bank-security",
+  "secure-paypal",
+  "microsoft-security",
+  "amazon-security"
+];
+
+
+/* =========================================================
+   EVENTS
+   ========================================================= */
 
 if (form) {
-
-  form.addEventListener("submit", function(event) {
-
+  form.addEventListener("submit", function (event) {
     event.preventDefault();
-
     runAnalysis();
-
   });
-
 }
-
 
 if (clearBtn) {
-
-  clearBtn.addEventListener("click", function() {
-
-    if (form) {
-      form.reset();
-    }
-
-    clearFieldErrors();
-    resetResults();
-
-    lastAnalysis = null;
-
-  });
-
+  clearBtn.addEventListener("click", clearForm);
 }
-
 
 if (downloadBtn) {
-
-  downloadBtn.addEventListener("click", function() {
-
+  downloadBtn.addEventListener("click", function () {
     if (lastAnalysis) {
-
       generateReport(lastAnalysis);
-
     }
-
   });
-
-}
-
-const noteText =
-  "Required field For better results, please fill in all available fields.";
-
-const noteElement = document.getElementById("form-note-text");
-
-let noteIndex = 0;
-
-function typeNote() {
-  if (noteIndex < noteText.length) {
-    noteElement.textContent += noteText.charAt(noteIndex);
-    noteIndex++;
-    setTimeout(typeNote, 35);
-  }
-}
-
-typeNote();
-/* =========================
-   FIELD VALIDATION
-   ========================= */
-
-function clearFieldErrors() {
-
-  document.querySelectorAll(".field").forEach(function(field) {
-
-    field.classList.remove("has-error");
-
-  });
-
 }
 
 
-function setFieldError(fieldId) {
+/* =========================================================
+   MOBILE NAVIGATION
+   ========================================================= */
 
-  const field = document.getElementById(fieldId);
+function initializeMobileNavigation() {
+  const toggleButtons = document.querySelectorAll(
+    ".nav-toggle, .menu-toggle, #menu-toggle, #hamburger-btn"
+  );
 
-  if (field) {
+  const navigation =
+    document.querySelector(".nav-links") ||
+    document.querySelector("#nav-links") ||
+    document.querySelector("#mobile-menu");
 
-    field.classList.add("has-error");
-
+  if (!navigation || toggleButtons.length === 0) {
+    return;
   }
 
+  toggleButtons.forEach(function (button) {
+    button.addEventListener("click", function () {
+      const isOpen = navigation.classList.toggle("active");
+
+      button.classList.toggle("active", isOpen);
+      button.setAttribute("aria-expanded", String(isOpen));
+    });
+  });
+
+  navigation.querySelectorAll("a").forEach(function (link) {
+    link.addEventListener("click", function () {
+      navigation.classList.remove("active");
+
+      toggleButtons.forEach(function (button) {
+        button.classList.remove("active");
+        button.setAttribute("aria-expanded", "false");
+      });
+    });
+  });
 }
 
+initializeMobileNavigation();
 
-function validateInputs(sender, subject, body) {
+
+/* =========================================================
+   ANALYSIS
+   ========================================================= */
+
+function runAnalysis() {
+  const sender = senderInput ? senderInput.value.trim() : "";
+  const subject = subjectInput ? subjectInput.value.trim() : "";
+  const body = bodyInput ? bodyInput.value.trim() : "";
 
   clearFieldErrors();
 
-  let isValid = true;
-
-  const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-
-  // Sender Email - OPTIONAL
-  // Validate only when the user enters something.
-  if (
-    sender.trim() &&
-    !emailPattern.test(sender.trim())
-  ) {
-
-    setFieldError("field-sender");
-
-    isValid = false;
-
-  }
-
-
-  // Subject - OPTIONAL
-  // No validation required.
-
-
-  // Email Body - REQUIRED
-  if (!body.trim()) {
-
-    setFieldError("field-body");
-
-    isValid = false;
-
-  }
-
-
-  return isValid;
-
-}
-
-
-/* =========================
-   RUN ANALYSIS
-   ========================= */
-
-function runAnalysis() {
-
-  if (!senderInput || !subjectInput || !bodyInput) {
+  if (sender && !isValidEmail(sender)) {
+    setFieldError(senderInput, "Please enter a valid sender email.");
     return;
   }
 
-
-  const sender = senderInput.value;
-  const subject = subjectInput.value;
-  const body = bodyInput.value;
-
-
-  if (!validateInputs(sender, subject, body)) {
-
-    resetResults();
-
+  if (!body) {
+    setFieldError(bodyInput, "Email body is required.");
     return;
-
   }
-
 
   const input = {
-
-    senderEmail: sender.trim(),
-
-    subject: subject.trim(),
-
-    body: body.trim()
-
+    sender,
+    subject,
+    body
   };
-
 
   const result = analyzeEmail(input);
 
-
   lastAnalysis = {
-
-    input: input,
-
-    result: result
-
+    input,
+    result
   };
 
-
-  renderResult(input, result);
-
+  renderResults(result);
 }
 
-
-/* =========================
-   EMAIL ANALYSIS
-   ========================= */
-
 function analyzeEmail(input) {
+  const sender = input.sender.toLowerCase();
+  const subject = input.subject.toLowerCase();
+  const body = input.body.toLowerCase();
 
-  const text = (input.subject + " " + input.body)
-    .toLowerCase()
-    .replace(/\s+/g, " ");
+  const text = `${subject} ${body}`
+    .replace(/\s+/g, " ")
+    .trim();
 
-
-  const phishingKeywords = [
-
-    "verify your account",
-    "verify your identity",
-    "confirm your identity",
-    "confirm your account",
-    "verify your details",
-    "confirm your details",
-    "account verification",
-    "security verification",
-    "security confirmation",
-    "validate your account",
-    "validate your identity",
-    "unusual activity",
-    "suspicious activity",
-    "unrecognized login",
-    "unrecognized device",
-    "unknown device",
-    "unknown login",
-    "new login detected",
-    "new sign-in detected",
-    "login attempt",
-    "sign-in attempt",
-    "security alert",
-    "security warning",
-    "security notice",
-    "security breach",
-    "unauthorized access",
-    "unauthorized login",
-    "account compromised",
-    "account has been compromised",
-    "account suspended",
-    "account suspension",
-    "account blocked",
-    "account locked",
-    "account disabled",
-    "access restricted",
-    "limited access",
-    "restore your account",
-    "recover your account",
-    "account recovery",
-    "reset your password immediately",
-    "change your password immediately",
-    "password expires",
-    "password will expire",
-    "password expired",
-    "confirm your password",
-    "update your password",
-    "update your security information",
-    "update your billing information",
-    "update your payment information",
-    "confirm your payment",
-    "verify your payment",
-    "verify payment method",
-    "confirm payment method",
-    "verify billing information",
-    "confirm billing information",
-    "click here to verify",
-    "click here to confirm",
-    "click the link to verify",
-    "click the link to confirm",
-    "complete verification",
-    "complete the verification",
-    "identity verification required",
-    "verification required",
-    "action required",
-    "immediate action required",
-    "urgent action required",
-    "respond immediately",
-    "act immediately",
-    "act now",
-    "do not ignore",
-    "failure to verify",
-    "failure to complete verification",
-    "within 24 hours",
-    "within 48 hours",
-    "before your account is suspended",
-    "before your account is locked",
-    "avoid suspension",
-    "avoid account closure"
-
-  ];
-
-
-  const spamKeywords = [
-
-    "special offer",
-    "special offers",
-    "limited time offer",
-    "limited-time offer",
-    "exclusive offer",
-    "exclusive deal",
-    "mega sale",
-    "flash sale",
-    "weekend sale",
-    "season sale",
-    "holiday sale",
-    "clearance sale",
-    "summer sale",
-    "winter sale",
-    "festive sale",
-    "big sale",
-    "huge sale",
-    "massive sale",
-    "discount",
-    "discounts",
-    "save big",
-    "save more",
-    "save up to",
-    "best price",
-    "best prices",
-    "lowest price",
-    "special price",
-    "special prices",
-    "great deal",
-    "great deals",
-    "amazing deal",
-    "amazing deals",
-    "hot deal",
-    "hot deals",
-    "exclusive deal",
-    "exclusive deals",
-    "limited offer",
-    "limited offers",
-    "offer ends",
-    "offer expires",
-    "offer valid",
-    "offer valid until",
-    "buy now",
-    "shop now",
-    "order now",
-    "book now",
-    "grab now",
-    "get yours now",
-    "don't miss",
-    "dont miss",
-    "don't miss out",
-    "dont miss out",
-    "free shipping",
-    "free delivery",
-    "free gift",
-    "free trial",
-    "gift voucher",
-    "gift card",
-    "coupon",
-    "coupon code",
-    "promo code",
-    "promotion",
-    "promotional",
-    "promotional offer",
-    "cashback",
-    "cash back",
-    "reward points",
-    "bonus points",
-    "membership offer",
-    "loyalty offer",
-    "new collection",
-    "new arrivals",
-    "shop our collection",
-    "browse our deals",
-    "browse our offers",
-    "online shopping",
-    "shopping deal",
-    "shopping deals",
-    "price drop",
-    "prices dropped",
-    "exclusive access",
-    "member exclusive",
-    "members only",
-    "early access",
-    "special promotion",
-    "limited stock",
-    "while supplies last",
-    "today only",
-    "this weekend only"
-
-  ];
-
-
-  const urgencyKeywords = [
-
-    "urgent",
-    "immediately",
-    "act now",
-    "action required",
-    "final warning",
-    "last chance",
-    "expires today",
-    "respond immediately",
-    "within 24 hours",
-    "within 48 hours",
-    "do not delay",
-    "time sensitive",
-    "time-sensitive",
-    "immediate response"
-
-  ];
-
-
-  const credentialKeywords = [
-
-    "login credentials",
-    "account credentials",
-    "username and password",
-    "enter your password",
-    "provide your password",
-    "confirm your password",
-    "enter your login",
-    "enter your credentials",
-    "security code",
-    "verification code",
-    "authentication code",
-    "one-time password",
-    "one time password"
-
-  ];
-
-
-  const lookalikeBrands = [
-
-    "paypal",
-    "paypa1",
-    "paypaI",
-    "paypai",
-    "microsoft",
-    "micros0ft",
-    "micr0soft",
-    "micro5oft",
-    "amaz0n",
-    "arnazon",
-    "amazom",
-    "amazon",
-    "netflix",
-    "netfl1x",
-    "netfIix",
-    "netfiix",
-    "apple",
-    "app1e",
-    "appIe",
-    "app1e-id",
-    "google",
-    "g00gle",
-    "goog1e",
-    "go0gle",
-    "facebook",
-    "faceb00k",
-    "facebo0k",
-    "instagram",
-    "instagr4m",
-    "instagran",
-    "linkedin",
-    "linkedln",
-    "linkedi n",
-    "github",
-    "githab",
-    "g1thub",
-    "git-hub",
-    "adobe",
-    "ad0be",
-    "adob3",
-    "dropbox",
-    "dropb0x",
-    "docusign",
-    "d0cusign",
-    "steam",
-    "ste4m",
-    "spotify",
-    "spot1fy",
-    "whatsapp",
-    "whats4pp",
-    "telegram",
-    "te1egram",
-    "coinbase",
-    "c0inbase",
-    "binance",
-    "b1nance",
-    "ebay",
-    "eb4y",
-    "walmart",
-    "w4lmart",
-    "target",
-    "t4rget",
-    "bestbuy",
-    "bestbu y",
-    "samsung",
-    "samsun9",
-    "samsung-support",
-    "hp",
-    "h0",
-    "dell",
-    "de11",
-    "lenovo",
-    "len0vo",
-    "intel",
-    "inte1",
-    "nvidia",
-    "nvid1a",
-    "zoom",
-    "z00m",
-    "slack",
-    "s1ack",
-    "discord",
-    "disc0rd",
-    "notion",
-    "n0tion",
-    "canva",
-    "canv4",
-    "coursera",
-    "courser4",
-    "netbanking",
-    "paytm",
-    "payt m",
-    "phonepe",
-    "phonep3",
-    "razorpay",
-    "raz0rpay",
-    "hdfc",
-    "hdfcbank",
-    "icicibank",
-    "sbi",
-    "onlinesbi",
-    "axisbank",
-    "bankofamerica",
-    "chase",
-    "americanexpress",
-    "amex"
-
-  ];
-
-
-  const matchedPhishing = phishingKeywords.filter(function(keyword) {
-
-    return text.includes(keyword);
-
-  });
-
-
-  const matchedSpam = spamKeywords.filter(function(keyword) {
-
-    return text.includes(keyword);
-
-  });
-
-
-  const matchedUrgency = urgencyKeywords.filter(function(keyword) {
-
-    return text.includes(keyword);
-
-  });
-
-
-  const matchedCredentials = credentialKeywords.filter(function(keyword) {
-
-    return text.includes(keyword);
-
-  });
-
+  const matchedPhishing = findMatches(text, phishingKeywords);
+  const matchedSpam = findMatches(text, spamKeywords);
+  const matchedUrgency = findMatches(text, urgencyKeywords);
+  const matchedCredentials = findMatches(text, credentialKeywords);
 
   const urlMatches =
-    input.body.match(/https?:\/\/[^\s)>"']+/gi) || [];
+    input.body.match(/https?:\/\/[^\s<>"')]+/gi) || [];
 
+  const suspiciousUrls = urlMatches.filter(isSuspiciousUrl);
 
-  const suspiciousUrls = urlMatches.filter(function(url) {
+  const senderDomain = getSenderDomain(sender);
+  const senderLooksOff = isUnusualSender(sender);
 
-    try {
-
-      const hostname = new URL(url).hostname.toLowerCase();
-
-
-      if (/^\d{1,3}(\.\d{1,3}){3}$/.test(hostname)) {
-
-        return true;
-
-      }
-
-
-      if (hostname.includes("xn--")) {
-
-        return true;
-
-      }
-
-
-      if (
-        hostname.includes("verify-") ||
-        hostname.includes("-verify") ||
-        hostname.includes("secure-") ||
-        hostname.includes("-secure") ||
-        hostname.includes("account-") ||
-        hostname.includes("-account") ||
-        hostname.includes("login-") ||
-        hostname.includes("-login")
-      ) {
-
-        return true;
-
-      }
-
-
-      return false;
-
-    } catch {
-
-      return true;
-
-    }
-
+  const matchedLookalikeBrands = brandVariants.filter(function (brand) {
+    return sender.includes(brand);
   });
-
-
-  const senderLower = input.senderEmail.toLowerCase();
-
-  let senderDomain = "";
-
-
-  try {
-
-    senderDomain = senderLower.split("@")[1] || "";
-
-  } catch {
-
-    senderDomain = "";
-
-  }
-
-
-  const matchedLookalikeBrands = lookalikeBrands.filter(function(brand) {
-
-    return senderDomain.includes(brand.toLowerCase());
-
-  });
-
-
-  const senderLooksOff =
-    /\d{4,}/.test(senderLower) ||
-    senderLower.includes("-verify") ||
-    senderLower.includes("verify-") ||
-    senderLower.includes("-secure") ||
-    senderLower.includes("secure-") ||
-    senderLower.includes("-account") ||
-    senderLower.includes("account-") ||
-    senderLower.includes("-login") ||
-    senderLower.includes("login-");
-
 
   let phishingScore = 0;
 
-  let spamScore = 0;
-
-
   phishingScore += matchedPhishing.length * 15;
-
   phishingScore += suspiciousUrls.length * 20;
 
-
   if (senderLooksOff) {
-
     phishingScore += 15;
-
   }
-
 
   if (matchedLookalikeBrands.length > 0) {
-
     phishingScore += 30;
-
   }
 
-
-  if (matchedUrgency.length > 0) {
-
-    phishingScore += 8;
-
-  }
-
-
-  if (matchedCredentials.length > 0) {
-
-    phishingScore += 8;
-
-  }
-
+  phishingScore += matchedUrgency.length * 4;
+  phishingScore += matchedCredentials.length * 5;
 
   const hasVerification =
     text.includes("verify") ||
     text.includes("verification") ||
-    text.includes("confirm your identity") ||
-    text.includes("confirm your account");
-
+    text.includes("confirm your account") ||
+    text.includes("confirm your identity");
 
   const hasThreat =
     text.includes("suspended") ||
@@ -716,816 +321,596 @@ function analyzeEmail(input) {
     text.includes("terminated") ||
     text.includes("closure");
 
-
-  if (hasVerification && hasUrgency(text)) {
-
+  if (hasVerification && matchedUrgency.length > 0) {
     phishingScore += 20;
-
   }
-
 
   if (hasVerification && hasThreat) {
-
     phishingScore += 20;
-
   }
 
+  let spamScore = 0;
 
   spamScore += matchedSpam.length * 7;
 
-
   if (matchedSpam.length >= 2) {
-
     spamScore += 10;
-
   }
-
 
   if (
     text.includes("offer") &&
     (
-      text.includes("shop") ||
       text.includes("sale") ||
       text.includes("discount") ||
-      text.includes("deal")
+      text.includes("deal") ||
+      text.includes("shop")
     )
   ) {
-
     spamScore += 15;
-
   }
-
 
   if (
     text.includes("buy now") ||
     text.includes("shop now") ||
-    text.includes("subscribe") ||
+    text.includes("subscribe now") ||
     text.includes("coupon code") ||
     text.includes("promo code")
   ) {
-
     spamScore += 10;
-
   }
 
-
   phishingScore = Math.min(phishingScore, 97);
-
   spamScore = Math.min(spamScore, 95);
 
+  const indicatorCount =
+    matchedPhishing.length +
+    matchedSpam.length +
+    matchedUrgency.length +
+    matchedCredentials.length +
+    suspiciousUrls.length +
+    (senderLooksOff ? 1 : 0) +
+    (matchedLookalikeBrands.length > 0 ? 1 : 0);
 
   let verdict = "legitimate";
-
-  let riskScore = 8;
-
-  let confidence = 80;
-
+  let riskScore = 3;
+  let confidence = 95;
 
   if (phishingScore >= 50) {
-
     verdict = "phishing";
-
     riskScore = phishingScore;
 
     confidence = Math.min(
-      85 + matchedPhishing.length * 2 + matchedLookalikeBrands.length * 2,
-      99
+      99,
+      85 +
+      matchedPhishing.length * 2 +
+      matchedLookalikeBrands.length * 2 +
+      suspiciousUrls.length * 2
     );
-
   } else if (spamScore >= 30) {
-
     verdict = "spam";
-
-    riskScore = Math.min(20 + spamScore, 95);
+    riskScore = Math.min(95, 20 + spamScore);
 
     confidence = Math.min(
-      82 + matchedSpam.length * 2,
-      97
+      97,
+      82 + matchedSpam.length * 2
     );
-
   } else {
+    const keywordRisk =
+      matchedPhishing.length * 5 +
+      matchedSpam.length * 3 +
+      matchedUrgency.length * 4 +
+      matchedCredentials.length * 5;
 
-    verdict = "legitimate";
+    const urlRisk = suspiciousUrls.length * 12;
+    const senderRisk = senderLooksOff ? 8 : 0;
+    const brandRisk = matchedLookalikeBrands.length > 0 ? 12 : 0;
+
+    const combinedRisk =
+      keywordRisk +
+      urlRisk +
+      senderRisk +
+      brandRisk +
+      Math.round(phishingScore * 0.2) +
+      Math.round(spamScore * 0.15);
 
     riskScore = Math.min(
-      8 + phishingScore + Math.floor(spamScore / 2),
-      49
+      49,
+      Math.max(3, Math.round(combinedRisk))
     );
 
-    confidence = Math.max(
-      85 - Math.floor(riskScore / 5),
-      65
+    confidence = Math.min(
+      97,
+      Math.max(65, 96 - Math.round(riskScore * 0.6))
     );
-
   }
-
 
   const reasons = [];
 
-
-  if (verdict === "phishing") {
-
-    if (matchedPhishing.length > 0) {
-
-      reasons.push(
-        "Suspicious account or security language detected"
-      );
-
-    }
-
-
-    if (suspiciousUrls.length > 0) {
-
-      reasons.push(
-        "Suspicious URL pattern detected"
-      );
-
-    }
-
-
-    if (senderLooksOff) {
-
-      reasons.push(
-        "Sender address contains a suspicious pattern"
-      );
-
-    }
-
-
-    if (matchedLookalikeBrands.length > 0) {
-
-      reasons.push(
-        "Lookalike or impersonation brand detected in sender domain"
-      );
-
-    }
-
-
-    if (hasVerification && matchedUrgency.length > 0) {
-
-      reasons.push(
-        "Verification language combined with urgency"
-      );
-
-    }
-
-
-    if (hasVerification && hasThreat) {
-
-      reasons.push(
-        "Account verification combined with an account threat"
-      );
-
-    }
-
-  } else if (verdict === "spam") {
-
+  if (matchedPhishing.length > 0) {
     reasons.push(
-      "Promotional or marketing language detected"
+      `Phishing-related keywords detected: ${matchedPhishing.join(", ")}`
     );
-
-
-    if (matchedSpam.length >= 2) {
-
-      reasons.push(
-        "Multiple promotional keywords detected"
-      );
-
-    }
-
-
-    if (
-      text.includes("offer") ||
-      text.includes("sale") ||
-      text.includes("discount") ||
-      text.includes("deal")
-    ) {
-
-      reasons.push(
-        "Commercial offer or sales language detected"
-      );
-
-    }
-
-  } else {
-
-    reasons.push(
-      "No strong phishing or spam indicators found"
-    );
-
   }
 
+  if (matchedSpam.length > 0) {
+    reasons.push(
+      `Spam-related keywords detected: ${matchedSpam.join(", ")}`
+    );
+  }
 
-  const keywordResults = [
+  if (matchedUrgency.length > 0) {
+    reasons.push(
+      `Urgency indicators detected: ${matchedUrgency.join(", ")}`
+    );
+  }
 
-    ...matchedPhishing.map(function(keyword) {
+  if (matchedCredentials.length > 0) {
+    reasons.push(
+      `Credential-related terms detected: ${matchedCredentials.join(", ")}`
+    );
+  }
 
-      return {
-        term: keyword,
-        type: "phishing"
-      };
+  if (suspiciousUrls.length > 0) {
+    reasons.push(
+      `${suspiciousUrls.length} suspicious URL(s) detected`
+    );
+  }
 
-    }),
+  if (senderLooksOff) {
+    reasons.push("Sender format appears unusual");
+  }
 
-    ...matchedSpam.map(function(keyword) {
+  if (matchedLookalikeBrands.length > 0) {
+    reasons.push(
+      `Possible brand impersonation detected: ${matchedLookalikeBrands.join(", ")}`
+    );
+  }
 
-      return {
-        term: keyword,
-        type: "spam"
-      };
+  if (urlMatches.length === 0) {
+    reasons.push("No URLs detected in the email body");
+  }
 
-    })
+  if (verdict === "legitimate") {
+    if (indicatorCount === 0) {
+      reasons.push(
+        "No suspicious phishing, spam, sender, or URL indicators detected"
+      );
+    } else {
+      reasons.push(
+        "Weak indicators were detected, but phishing and spam thresholds were not reached"
+      );
+    }
+  }
 
-  ];
-
+  if (reasons.length === 0) {
+    reasons.push("No significant indicators detected");
+  }
 
   return {
-
-    verdict: verdict,
-
-    riskScore: Math.round(riskScore),
-
-    confidence: Math.round(confidence),
-
-    reasons: reasons,
-
-    urls: {
-
-      detected: urlMatches.length,
-
-      suspicious: suspiciousUrls.length
-
-    },
-
-    keywords: keywordResults
-
+    verdict,
+    riskScore,
+    confidence,
+    reasons,
+    matchedPhishing,
+    matchedSpam,
+    matchedUrgency,
+    matchedCredentials,
+    matchedLookalikeBrands,
+    urlMatches,
+    suspiciousUrls,
+    senderDomain,
+    phishingScore,
+    spamScore
   };
-
 }
 
 
-/* =========================
-   URGENCY CHECK
-   ========================= */
+/* =========================================================
+   HELPERS
+   ========================================================= */
 
-function hasUrgency(text) {
+function findMatches(text, keywords) {
+  return keywords.filter(function (keyword) {
+    return text.includes(keyword.toLowerCase());
+  });
+}
+
+function isSuspiciousUrl(url) {
+  try {
+    const parsedUrl = new URL(url);
+    const hostname = parsedUrl.hostname.toLowerCase();
+
+    const hasIpAddress =
+      /^\d{1,3}(\.\d{1,3}){3}$/.test(hostname);
+
+    const hasPunycode = hostname.includes("xn--");
+
+    const suspiciousTerms = [
+      "verify-",
+      "-verify",
+      "secure-",
+      "-secure",
+      "account-",
+      "-account",
+      "login-",
+      "-login",
+      "update-",
+      "-update"
+    ];
+
+    const hasSuspiciousTerm = suspiciousTerms.some(function (term) {
+      return hostname.includes(term);
+    });
+
+    return (
+      hasIpAddress ||
+      hasPunycode ||
+      hasSuspiciousTerm
+    );
+  } catch (error) {
+    return true;
+  }
+}
+
+function getSenderDomain(sender) {
+  if (!sender.includes("@")) {
+    return "Unknown";
+  }
+
+  return sender.split("@")[1];
+}
+
+function isUnusualSender(sender) {
+  if (!sender) {
+    return false;
+  }
+
+  const localPart = sender.split("@")[0] || "";
+  const domain = getSenderDomain(sender);
+
+  const hasManyNumbers =
+    (localPart.match(/\d/g) || []).length >= 4;
+
+  const hasRepeatedHyphens = domain.includes("--");
+
+  const hasSuspiciousDomainPattern =
+    domain.startsWith("-") ||
+    domain.endsWith("-") ||
+    domain.includes("secure-login") ||
+    domain.includes("account-verify");
 
   return (
-    text.includes("urgent") ||
-    text.includes("immediately") ||
-    text.includes("act now") ||
-    text.includes("action required") ||
-    text.includes("within 24 hours") ||
-    text.includes("within 48 hours")
+    hasManyNumbers ||
+    hasRepeatedHyphens ||
+    hasSuspiciousDomainPattern
   );
+}
 
+function isValidEmail(email) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
 
-/* =========================
-   RESET RESULTS
-   ========================= */
+/* =========================================================
+   RESULTS
+   ========================================================= */
 
-function resetResults() {
-
-  if (!resultEmpty || !resultContent || !verdictRow) {
-    return;
+function renderResults(result) {
+  if (resultEmpty) {
+    resultEmpty.style.display = "none";
   }
 
-
-  resultEmpty.classList.remove("is-hidden");
-
-  resultContent.classList.remove("is-visible");
-
-  verdictRow.classList.remove(
-    "phishing",
-    "spam",
-    "legitimate"
-  );
-
-}
-
-
-/* =========================
-   RENDER RESULT
-   ========================= */
-
-function renderResult(input, result) {
-
-  if (
-    !resultEmpty ||
-    !resultContent ||
-    !verdictRow ||
-    !verdictValue ||
-    !riskScoreEl ||
-    !confidenceScoreEl ||
-    !reasonList ||
-    !urlsDetectedEl ||
-    !urlsSuspiciousEl ||
-    !keywordList
-  ) {
-
-    return;
-
+  if (resultContent) {
+    resultContent.style.display = "block";
   }
 
-
-  resultEmpty.classList.add("is-hidden");
-
-  resultContent.classList.add("is-visible");
-
-
-  verdictRow.classList.remove(
-    "phishing",
-    "spam",
-    "legitimate"
-  );
-
-
-  verdictRow.classList.add(result.verdict);
-
-
-  if (result.verdict === "phishing") {
-
-    verdictValue.textContent = "PHISHING";
-
-  } else if (result.verdict === "spam") {
-
-    verdictValue.textContent = "SPAM";
-
-  } else {
-
-    verdictValue.textContent = "LEGITIMATE";
-
+  if (verdictRow) {
+    verdictRow.className = `verdict-row ${result.verdict}`;
   }
 
+  if (verdictValue) {
+    verdictValue.textContent = result.verdict.toUpperCase();
+  }
 
-  riskScoreEl.textContent =
-    result.riskScore + "%";
+  if (riskScoreEl) {
+    riskScoreEl.textContent = `${result.riskScore}%`;
+  }
 
+  if (confidenceScoreEl) {
+    confidenceScoreEl.textContent = `${result.confidence}%`;
+  }
 
-  confidenceScoreEl.textContent =
-    result.confidence + "%";
+  if (urlsDetectedEl) {
+    urlsDetectedEl.textContent = result.urlMatches.length;
+  }
 
+  if (urlsSuspiciousEl) {
+    urlsSuspiciousEl.textContent = result.suspiciousUrls.length;
+  }
 
-  reasonList.innerHTML = "";
+  if (reasonList) {
+    reasonList.innerHTML = "";
 
-
-  result.reasons.forEach(function(reason) {
-
-    const li = document.createElement("li");
-
-    li.textContent = reason;
-
-    reasonList.appendChild(li);
-
-  });
-
-
-  urlsDetectedEl.textContent =
-    result.urls.detected;
-
-
-  urlsSuspiciousEl.textContent =
-    result.urls.suspicious;
-
-
-  keywordList.innerHTML = "";
-
-
-  if (result.keywords.length === 0) {
-
-    const span = document.createElement("span");
-
-    span.className = "keyword-chip";
-
-    span.textContent =
-      "No suspicious keywords found";
-
-    keywordList.appendChild(span);
-
-  } else {
-
-    result.keywords.forEach(function(keyword) {
-
-      const span = document.createElement("span");
-
-      span.className =
-        "keyword-chip flagged " +
-        (keyword.type === "spam" ? "spam" : "phishing");
-
-      span.textContent = keyword.term;
-
-      keywordList.appendChild(span);
-
+    result.reasons.forEach(function (reason) {
+      const item = document.createElement("li");
+      item.textContent = reason;
+      reasonList.appendChild(item);
     });
-
   }
 
-}
+  if (keywordList) {
+    keywordList.innerHTML = "";
 
+    const groups = [
+      {
+        title: "Phishing Keywords",
+        values: result.matchedPhishing
+      },
+      {
+        title: "Spam Keywords",
+        values: result.matchedSpam
+      },
+      {
+        title: "Urgency Keywords",
+        values: result.matchedUrgency
+      },
+      {
+        title: "Credential Keywords",
+        values: result.matchedCredentials
+      },
+      {
+        title: "Brand Indicators",
+        values: result.matchedLookalikeBrands
+      }
+    ];
 
-/* =========================
-   PDF REPORT
-   ========================= */
+    let hasKeywords = false;
 
-async function generateReport(analysis) {
+    groups.forEach(function (group) {
+      const uniqueValues = [...new Set(group.values)];
 
-  if (!window.jspdf) {
-    return;
-  }
-
-
-  const { jsPDF } = window.jspdf;
-
-
-  const doc = new jsPDF({
-
-    unit: "pt",
-
-    format: "a4"
-
-  });
-
-
-  const marginX = 48;
-
-  let y = 56;
-
-  const lineHeight = 16;
-
-  const pageWidth =
-    doc.internal.pageSize.getWidth();
-
-  const contentWidth =
-    pageWidth - marginX * 2;
-
-
-  function addLine(text, size, style) {
-
-    doc.setFontSize(size || 11);
-
-    doc.setFont(
-      "helvetica",
-      style || "normal"
-    );
-
-
-    const wrapped =
-      doc.splitTextToSize(
-        String(text),
-        contentWidth
-      );
-
-
-    wrapped.forEach(function(line) {
-
-      if (y > 780) {
-
-        doc.addPage();
-
-        y = 56;
-
+      if (uniqueValues.length === 0) {
+        return;
       }
 
+      hasKeywords = true;
 
-      doc.text(
-        line,
-        marginX,
-        y
-      );
+      const heading = document.createElement("li");
+      heading.textContent = group.title;
+      heading.className = "keyword-group-heading";
+      keywordList.appendChild(heading);
 
-
-      y += lineHeight;
-
+      uniqueValues.forEach(function (keyword) {
+        const item = document.createElement("li");
+        item.textContent = keyword;
+        item.className = "keyword-item";
+        keywordList.appendChild(item);
+      });
     });
 
-  }
-
-
-  function addSpacer(amount) {
-
-    y += amount || 8;
-
-  }
-
-
-  /* Logo */
-
-  const logo = new Image();
-
-  logo.src = "phishnet-report-logo.png";
-
-
-  await new Promise(function(resolve) {
-
-    logo.onload = resolve;
-
-    logo.onerror = resolve;
-
-  });
-
-
-  if (
-    logo.complete &&
-    logo.naturalWidth > 0
-  ) {
-
-    doc.addImage(
-      logo,
-      "PNG",
-      marginX,
-      y - 24,
-      42,
-      42
-    );
-
-  }
-
-
-  /* Header */
-
-  doc.setFontSize(16);
-
-  doc.setFont(
-    "helvetica",
-    "bold"
-  );
-
-
-  doc.text(
-    "PhishNet AI",
-    marginX + 44,
-    y
-  );
-
-
-  addSpacer(28);
-
-
-  addLine(
-    "Email Threat Analysis Report",
-    13,
-    "bold"
-  );
-
-
-  addSpacer(4);
-
-
-  const now = new Date();
-
-
-  addLine(
-    "Generated: " +
-    now.toLocaleString(),
-    10
-  );
-
-
-  addSpacer(10);
-
-
-  addLine(
-    "Email Details",
-    12,
-    "bold"
-  );
-
-
-  addLine(
-    "Sender: " +
-    (analysis.input.senderEmail || "(not provided)")
-  );
-
-
-  addLine(
-    "Subject: " +
-    (analysis.input.subject || "(not provided)")
-  );
-
-
-  addSpacer(4);
-
-
-  addLine(
-    "Body:",
-    11,
-    "bold"
-  );
-
-
-  addLine(
-    analysis.input.body ||
-    "(empty)"
-  );
-
-
-  addSpacer(10);
-
-
-  addLine(
-    "Verdict and Scoring",
-    12,
-    "bold"
-  );
-
-
-  let reportVerdict =
-    "LEGITIMATE";
-
-
-  if (
-    analysis.result.verdict ===
-    "phishing"
-  ) {
-
-    reportVerdict =
-      "PHISHING";
-
-  } else if (
-    analysis.result.verdict ===
-    "spam"
-  ) {
-
-    reportVerdict =
-      "SPAM";
-
-  }
-
-
-  addLine(
-    "Verdict: " +
-    reportVerdict
-  );
-
-
-  addLine(
-    "Risk Score: " +
-    analysis.result.riskScore +
-    "%"
-  );
-
-
-  addLine(
-    "Confidence: " +
-    analysis.result.confidence +
-    "%"
-  );
-
-
-  addSpacer(10);
-
-
-  addLine(
-    "Detection Reasons",
-    12,
-    "bold"
-  );
-
-
-  analysis.result.reasons.forEach(
-    function(reason) {
-
-      addLine(
-        "- " + reason
-      );
-
+    if (!hasKeywords) {
+      const item = document.createElement("li");
+      item.textContent = "No matching keywords detected";
+      keywordList.appendChild(item);
     }
-  );
-
-
-  addSpacer(10);
-
-
-  addLine(
-    "URL Analysis",
-    12,
-    "bold"
-  );
-
-
-  addLine(
-    "URLs detected: " +
-    analysis.result.urls.detected
-  );
-
-
-  addLine(
-    "Suspicious URLs: " +
-    analysis.result.urls.suspicious
-  );
-
-
-  addSpacer(10);
-
-
-  addLine(
-    "Keyword Analysis",
-    12,
-    "bold"
-  );
-
-
-  if (
-    analysis.result.keywords.length === 0
-  ) {
-
-    addLine(
-      "No suspicious keywords found."
-    );
-
-  } else {
-
-    addLine(
-      analysis.result.keywords
-        .map(function(keyword) {
-
-          return keyword.term;
-
-        })
-        .join(", ")
-    );
-
   }
-
-
-  addSpacer(16);
-
-
-  addLine(
-    "Disclaimer",
-    12,
-    "bold"
-  );
-
-
-  addLine(
-    "This result is an automated assessment and should not be treated as definitive proof that an email is malicious, spam, or legitimate.",
-    10
-  );
-
-
-  doc.save(
-    "phishnet-ai-report.pdf"
-  );
-
 }
 
 
-/* =========================
-   MOBILE NAVIGATION
-   ========================= */
+/* =========================================================
+   FORM ERRORS
+   ========================================================= */
 
-const navToggle =
-  document.querySelector(".nav-toggle");
+function setFieldError(inputElement, message) {
+  if (!inputElement) {
+    return;
+  }
 
-const navLinks =
-  document.querySelector(".nav-links");
+  inputElement.classList.add("input-error");
+  inputElement.setAttribute("aria-invalid", "true");
+
+  let errorElement =
+    inputElement.parentElement.querySelector(".field-error");
+
+  if (!errorElement) {
+    errorElement = document.createElement("small");
+    errorElement.className = "field-error";
+    inputElement.parentElement.appendChild(errorElement);
+  }
+
+  errorElement.textContent = message;
+}
+
+function clearFieldErrors() {
+  document.querySelectorAll(".input-error").forEach(function (element) {
+    element.classList.remove("input-error");
+    element.removeAttribute("aria-invalid");
+  });
+
+  document.querySelectorAll(".field-error").forEach(function (element) {
+    element.remove();
+  });
+}
+
+function clearForm() {
+  if (form) {
+    form.reset();
+  }
+
+  clearFieldErrors();
+
+  if (resultEmpty) {
+    resultEmpty.style.display = "block";
+  }
+
+  if (resultContent) {
+    resultContent.style.display = "none";
+  }
+
+  lastAnalysis = null;
+}
 
 
-if (navToggle && navLinks) {
+/* =========================================================
+   PDF REPORT
+   ========================================================= */
 
-  navToggle.addEventListener(
-    "click",
-    function() {
+function loadImage(src) {
+  return new Promise(function (resolve) {
+    const image = new Image();
 
-      const isOpen =
-        navLinks.classList.toggle(
-          "is-open"
-        );
+    image.onload = function () {
+      resolve(image);
+    };
 
+    image.onerror = function () {
+      resolve(null);
+    };
 
-      navToggle.setAttribute(
-        "aria-expanded",
-        String(isOpen)
-      );
+    image.src = src;
+  });
+}
 
-    }
-  );
+async function generateReport(analysis) {
+  if (!analysis || !window.jspdf || !window.jspdf.jsPDF) {
+    alert("PDF library is not loaded.");
+    return;
+  }
 
+  const doc = new window.jspdf.jsPDF({
+    unit: "pt",
+    format: "a4"
+  });
 
-  navLinks
-    .querySelectorAll("a")
-    .forEach(function(link) {
+  const margin = 48;
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
+  const contentWidth = pageWidth - margin * 2;
 
-      link.addEventListener(
-        "click",
-        function() {
+  let y = 52;
 
-          navLinks.classList.remove(
-            "is-open"
-          );
+  const input = analysis.input;
+  const result = analysis.result;
 
+  function addText(
+    text,
+    size = 10,
+    style = "normal",
+    gapAfter = 6
+  ) {
+    doc.setFont("helvetica", style);
+    doc.setFontSize(size);
 
-          navToggle.setAttribute(
-            "aria-expanded",
-            "false"
-          );
+    const lines = doc.splitTextToSize(
+      String(text || "Not provided"),
+      contentWidth
+    );
 
-        }
-      );
+    lines.forEach(function (line) {
+      if (y + size + 8 > pageHeight - margin) {
+        doc.addPage();
+        y = margin;
+      }
 
+      doc.text(line, margin, y);
+      y += size + 5;
     });
 
+    y += gapAfter;
+  }
+
+  function addSectionHeading(text) {
+    addText(text, 12, "bold", 8);
+  }
+
+  const logo = await loadImage("cluewell-mail.png");
+
+  if (logo) {
+    doc.addImage(logo, "PNG", margin, 30, 58, 58);
+  }
+
+  addText("ClueWell Mail", 20, "bold", 3);
+  addText("Email Threat Analysis Report", 13, "normal", 5);
+  addText(
+    `Generated: ${new Date().toLocaleString()}`,
+    9,
+    "normal",
+    15
+  );
+
+  addSectionHeading("Email Details");
+  addText(`Sender: ${input.sender || "Not provided"}`);
+  addText(`Subject: ${input.subject || "Not provided"}`);
+  addText(`Body: ${input.body || "Not provided"}`, 10, "normal", 12);
+
+  addSectionHeading("Verdict and Scoring");
+  addText(`Verdict: ${result.verdict.toUpperCase()}`, 11, "bold");
+  addText(`Risk Score: ${result.riskScore}%`);
+  addText(`Rule-Based Confidence: ${result.confidence}%`);
+  addText(`Phishing Score: ${result.phishingScore}`);
+  addText(`Spam Score: ${result.spamScore}`, 10, "normal", 12);
+
+  addSectionHeading("Detection Reasons");
+
+  result.reasons.forEach(function (reason) {
+    addText(`• ${reason}`, 10, "normal", 2);
+  });
+
+  y += 8;
+
+  addSectionHeading("URL Analysis");
+  addText(`URLs Detected: ${result.urlMatches.length}`);
+  addText(`Suspicious URLs: ${result.suspiciousUrls.length}`);
+
+  if (result.urlMatches.length > 0) {
+    result.urlMatches.forEach(function (url) {
+      const status = result.suspiciousUrls.includes(url)
+        ? "Suspicious"
+        : "Not flagged";
+
+      addText(`${url} — ${status}`, 9, "normal", 2);
+    });
+  } else {
+    addText("No URLs detected.");
+  }
+
+  y += 8;
+
+  addSectionHeading("Keyword Analysis");
+
+  addText(
+    `Phishing Keywords: ${result.matchedPhishing.join(", ") || "None"}`
+  );
+
+  addText(
+    `Spam Keywords: ${result.matchedSpam.join(", ") || "None"}`
+  );
+
+  addText(
+    `Urgency Keywords: ${result.matchedUrgency.join(", ") || "None"}`
+  );
+
+  addText(
+    `Credential Keywords: ${result.matchedCredentials.join(", ") || "None"}`
+  );
+
+  addText(
+    `Possible Brand Indicators: ${
+      result.matchedLookalikeBrands.join(", ") || "None"
+    }`,
+    10,
+    "normal",
+    12
+  );
+
+  addSectionHeading("Disclaimer");
+
+  addText(
+    "ClueWell Mail uses client-side keyword and rule-based analysis. The result is an indication only and should not be treated as a guaranteed security decision.",
+    9,
+    "normal",
+    5
+  );
+
+  doc.save("ClueWell-Mail-report.pdf");
 }

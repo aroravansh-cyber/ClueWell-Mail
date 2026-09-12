@@ -66,6 +66,25 @@ textarea:focus-visible {
   padding: 0 20px 64px;
 }
 
+.menu-toggle {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .menu-toggle {
+    display: block;
+  }
+
+  .nav-links {
+    display: none;
+    flex-direction: column;
+  }
+
+  .nav-links.active {
+    display: flex;
+  }
+}
+
 /* Navbar */
 
 .navbar {
