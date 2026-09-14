@@ -812,7 +812,7 @@ async function generateReport(analysis) {
   const pageHeight = doc.internal.pageSize.getHeight();
   const contentWidth = pageWidth - margin * 2;
 
-  let y = 52;
+  let y = 105;
 
   const input = analysis.input;
   const result = analysis.result;
@@ -848,44 +848,113 @@ async function generateReport(analysis) {
     addText(text, 12, "bold", 8);
   }
 
+  // Load logo
   const logo = await loadImage("assests/cluewell-mail.png");
 
   if (logo) {
-    doc.addImage(logo, "PNG", margin, 30, 58, 58);
+    doc.addImage(
+      logo,
+      "PNG",
+      margin,
+      30,
+      75,
+      60
+    );
   }
 
-  addText("ClueWell Mail", 20, "bold", 3);
-  addText("Email Threat Analysis Report", 13, "normal", 5);
-  addText(
-    `Generated: ${new Date().toLocaleString()}`,
-    9,
-    "normal",
-    15
+  // Title
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(20);
+
+  doc.text(
+    "ClueWell-Mail",
+    margin + 90,
+    65
   );
 
+  // Subtitle
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(13);
+
+  doc.text(
+    "Email Threat Analysis Report",
+    margin + 72,
+    85
+  );
+
+  // Start content below header
+  y = 125;
+
+  // Email Details
   addSectionHeading("Email Details");
-  addText(`Sender: ${input.sender || "Not provided"}`);
-  addText(`Subject: ${input.subject || "Not provided"}`);
-  addText(`Body: ${input.body || "Not provided"}`, 10, "normal", 12);
 
+  addText(
+    `Sender: ${input.sender || "Not provided"}`
+  );
+
+  addText(
+    `Subject: ${input.subject || "Not provided"}`
+  );
+
+  addText(
+    `Body: ${input.body || "Not provided"}`,
+    10,
+    "normal",
+    12
+  );
+
+  // Verdict and Scoring
   addSectionHeading("Verdict and Scoring");
-  addText(`Verdict: ${result.verdict.toUpperCase()}`, 11, "bold");
-  addText(`Risk Score: ${result.riskScore}%`);
-  addText(`Rule-Based Confidence: ${result.confidence}%`);
-  addText(`Phishing Score: ${result.phishingScore}`);
-  addText(`Spam Score: ${result.spamScore}`, 10, "normal", 12);
 
+  addText(
+    `Verdict: ${result.verdict.toUpperCase()}`,
+    11,
+    "bold"
+  );
+
+  addText(
+    `Risk Score: ${result.riskScore}%`
+  );
+
+  addText(
+    `Rule-Based Confidence: ${result.confidence}%`
+  );
+
+  addText(
+    `Phishing Score: ${result.phishingScore}`
+  );
+
+  addText(
+    `Spam Score: ${result.spamScore}`,
+    10,
+    "normal",
+    12
+  );
+
+  // Detection Reasons
   addSectionHeading("Detection Reasons");
 
   result.reasons.forEach(function (reason) {
-    addText(`• ${reason}`, 10, "normal", 2);
+    addText(
+      `• ${reason}`,
+      10,
+      "normal",
+      2
+    );
   });
 
   y += 8;
 
+  // URL Analysis
   addSectionHeading("URL Analysis");
-  addText(`URLs Detected: ${result.urlMatches.length}`);
-  addText(`Suspicious URLs: ${result.suspiciousUrls.length}`);
+
+  addText(
+    `URLs Detected: ${result.urlMatches.length}`
+  );
+
+  addText(
+    `Suspicious URLs: ${result.suspiciousUrls.length}`
+  );
 
   if (result.urlMatches.length > 0) {
     result.urlMatches.forEach(function (url) {
@@ -893,7 +962,12 @@ async function generateReport(analysis) {
         ? "Suspicious"
         : "Not flagged";
 
-      addText(`${url} — ${status}`, 9, "normal", 2);
+      addText(
+        `${url} — ${status}`,
+        9,
+        "normal",
+        2
+      );
     });
   } else {
     addText("No URLs detected.");
@@ -901,22 +975,31 @@ async function generateReport(analysis) {
 
   y += 8;
 
+  // Keyword Analysis
   addSectionHeading("Keyword Analysis");
 
   addText(
-    `Phishing Keywords: ${result.matchedPhishing.join(", ") || "None"}`
+    `Phishing Keywords: ${
+      result.matchedPhishing.join(", ") || "None"
+    }`
   );
 
   addText(
-    `Spam Keywords: ${result.matchedSpam.join(", ") || "None"}`
+    `Spam Keywords: ${
+      result.matchedSpam.join(", ") || "None"
+    }`
   );
 
   addText(
-    `Urgency Keywords: ${result.matchedUrgency.join(", ") || "None"}`
+    `Urgency Keywords: ${
+      result.matchedUrgency.join(", ") || "None"
+    }`
   );
 
   addText(
-    `Credential Keywords: ${result.matchedCredentials.join(", ") || "None"}`
+    `Credential Keywords: ${
+      result.matchedCredentials.join(", ") || "None"
+    }`
   );
 
   addText(
@@ -928,6 +1011,7 @@ async function generateReport(analysis) {
     12
   );
 
+  // Disclaimer
   addSectionHeading("Disclaimer");
 
   addText(
@@ -937,5 +1021,22 @@ async function generateReport(analysis) {
     5
   );
 
+  // Footer - Generated Date and Time
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(8);
+
+  const generatedText =
+    `Generated: ${new Date().toLocaleString()}`;
+
+  doc.text(
+    generatedText,
+    pageWidth - margin,
+    pageHeight - 25,
+    {
+      align: "right"
+    }
+  );
+
+  // Save PDF
   doc.save("ClueWell-Mail-report.pdf");
 }
