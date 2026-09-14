@@ -595,6 +595,7 @@ function isValidEmail(email) {
    RESULTS
    ========================================================= */
 
+
 function renderResults(result) {
   if (resultEmpty) {
     resultEmpty.style.display = "none";
@@ -628,6 +629,7 @@ function renderResults(result) {
     urlsSuspiciousEl.textContent = result.suspiciousUrls.length;
   }
 
+  // Detection Reasons
   if (reasonList) {
     reasonList.innerHTML = "";
 
@@ -638,36 +640,43 @@ function renderResults(result) {
     });
   }
 
+  // Keyword Analysis
+  
   if (keywordList) {
     keywordList.innerHTML = "";
 
     const groups = [
       {
         title: "Phishing Keywords",
-        values: result.matchedPhishing
+        values: result.matchedPhishing,
+        className: "phishing"
       },
       {
         title: "Spam Keywords",
-        values: result.matchedSpam
+        values: result.matchedSpam,
+        className: "spam"
       },
       {
         title: "Urgency Keywords",
-        values: result.matchedUrgency
+        values: result.matchedUrgency,
+        className: "urgency"
       },
       {
         title: "Credential Keywords",
-        values: result.matchedCredentials
+        values: result.matchedCredentials,
+        className: "credentials"
       },
       {
         title: "Brand Indicators",
-        values: result.matchedLookalikeBrands
+        values: result.matchedLookalikeBrands,
+        className: "brand"
       }
     ];
 
     let hasKeywords = false;
 
     groups.forEach(function (group) {
-      const uniqueValues = [...new Set(group.values)];
+      const uniqueValues = [...new Set(group.values || [])];
 
       if (uniqueValues.length === 0) {
         return;
@@ -675,22 +684,38 @@ function renderResults(result) {
 
       hasKeywords = true;
 
-      const heading = document.createElement("li");
+      // Create separate group container
+      const groupContainer = document.createElement("div");
+      groupContainer.className = "keyword-group";
+
+      // Create group heading
+      const heading = document.createElement("div");
       heading.textContent = group.title;
       heading.className = "keyword-group-heading";
-      keywordList.appendChild(heading);
+
+      groupContainer.appendChild(heading);
+
+      // Create chips container
+      const chipsContainer = document.createElement("div");
+      chipsContainer.className = "keyword-chips";
 
       uniqueValues.forEach(function (keyword) {
-        const item = document.createElement("li");
+        const item = document.createElement("span");
+
         item.textContent = keyword;
-        item.className = "keyword-item";
-        keywordList.appendChild(item);
+        item.className = `keyword-chip flagged ${group.className}`;
+
+        chipsContainer.appendChild(item);
       });
+
+      groupContainer.appendChild(chipsContainer);
+      keywordList.appendChild(groupContainer);
     });
 
     if (!hasKeywords) {
-      const item = document.createElement("li");
+      const item = document.createElement("div");
       item.textContent = "No matching keywords detected";
+      item.className = "keyword-empty";
       keywordList.appendChild(item);
     }
   }
@@ -823,7 +848,7 @@ async function generateReport(analysis) {
     addText(text, 12, "bold", 8);
   }
 
-  const logo = await loadImage("cluewell-mail.png");
+  const logo = await loadImage("assests/cluewell-mail.png");
 
   if (logo) {
     doc.addImage(logo, "PNG", margin, 30, 58, 58);

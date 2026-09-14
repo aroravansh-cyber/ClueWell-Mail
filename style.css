@@ -110,7 +110,7 @@ textarea:focus-visible {
 .brand {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 20 px;
   text-decoration: none;
   position: relative;
   z-index: 1002;
@@ -118,8 +118,8 @@ textarea:focus-visible {
 }
 
 .brand-logo {
-  width: 60px;
-  height: 60px;
+  width: 100px;
+  height: 70px;
   object-fit: contain;
   pointer-events: none;
 }
@@ -549,6 +549,22 @@ button {
 .keyword-chip.flagged.spam {
   color: var(--spam);
   border-color: var(--spam);
+}
+
+.keyword-group {
+  width: 100%;
+  margin-bottom: 14px;
+}
+
+.keyword-group-heading {
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+.keyword-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
 .report-row {
