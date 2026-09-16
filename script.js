@@ -4081,311 +4081,334 @@ function analyzeEmail(input) {
    */
   let phishingScore = 0;
 
-  phishingScore += Math.min(matchedPhishing.length, 6) * 7;
-  phishingScore += Math.min(matchedUrgency.length, 4) * 3;
-  phishingScore += Math.min(matchedCredentials.length, 4) * 6;
-  phishingScore += Math.min(suspiciousUrls.length, 3) * 22;
+/*
+ * PHISHING KEYWORD SCORE
+ * Capped to prevent a large keyword dataset from
+ * artificially inflating the phishing score.
+ */
+const phishingKeywordScore = Math.min(
+  matchedPhishing.length * 4,
+  24
+);
 
-  if (senderLooksOff) {
-    phishingScore += 10;
-  }
+phishingScore += phishingKeywordScore;
 
-  if (matchedLookalikeBrands.length > 0) {
-    phishingScore += 22;
-  }
+phishingScore += Math.min(matchedUrgency.length, 4) * 3;
+phishingScore += Math.min(matchedCredentials.length, 4) * 6;
+phishingScore += Math.min(suspiciousUrls.length, 3) * 22;
 
-  if (hasVerificationPlusThreat) {
-    phishingScore += 24;
-  }
+if (senderLooksOff) {
+  phishingScore += 10;
+}
 
-  if (hasVerificationLink) {
-    phishingScore += 18;
-  }
+if (matchedLookalikeBrands.length > 0) {
+  phishingScore += 22;
+}
 
-  if (hasCredentialRequestPlusAction) {
-    phishingScore += 24;
-  }
+if (hasVerificationPlusThreat) {
+  phishingScore += 24;
+}
 
-  if (hasThreatPlusAction) {
-    phishingScore += 15;
-  }
+if (hasVerificationLink) {
+  phishingScore += 18;
+}
 
-  if (hasUrgencyPlusAction && hasVerification) {
-    phishingScore += 16;
-  }
+if (hasCredentialRequestPlusAction) {
+  phishingScore += 24;
+}
 
-  /*
-   * SPAM SCORE
-   */
-  let spamScore = 0;
+if (hasThreatPlusAction) {
+  phishingScore += 15;
+}
 
-  spamScore += Math.min(matchedSpam.length, 7) * 6;
+if (hasUrgencyPlusAction && hasVerification) {
+  phishingScore += 16;
+}
 
-  if (matchedSpam.length >= 2) {
-    spamScore += 8;
-  }
+/*
+ * SPAM SCORE
+ */
+let spamScore = 0;
 
-  if (
-    text.includes("offer") &&
-    (
-      text.includes("sale") ||
-      text.includes("discount") ||
-      text.includes("deal") ||
-      text.includes("shop")
-    )
-  ) {
-    spamScore += 12;
-  }
+spamScore += Math.min(matchedSpam.length, 7) * 6;
 
-  if (
-    text.includes("buy now") ||
-    text.includes("shop now") ||
-    text.includes("subscribe now") ||
-    text.includes("coupon code") ||
-    text.includes("promo code")
-  ) {
-    spamScore += 10;
-  }
+if (matchedSpam.length >= 2) {
+  spamScore += 8;
+}
 
-  /*
-   * Reduce spam classification when the same words appear in a
-   * stronger phishing context.
-   */
-  if (hasCredentialRequestPlusAction || hasVerificationPlusThreat) {
-    spamScore = Math.max(0, spamScore - 10);
-  }
+if (
+  text.includes("offer") &&
+  (
+    text.includes("sale") ||
+    text.includes("discount") ||
+    text.includes("deal") ||
+    text.includes("shop")
+  )
+) {
+  spamScore += 12;
+}
 
-  phishingScore = Math.min(97, Math.round(phishingScore));
-  spamScore = Math.min(95, Math.round(spamScore));
+if (
+  text.includes("buy now") ||
+  text.includes("shop now") ||
+  text.includes("subscribe now") ||
+  text.includes("coupon code") ||
+  text.includes("promo code")
+) {
+  spamScore += 10;
+}
 
-  /*
-   * Classification
-   * ---------------------------------------------------------
-   * Strong combinations can classify an email even when there
-   * are only a few keyword matches. This helps with harder tests.
-   */
-  let verdict = "legitimate";
+/*
+ * Reduce spam classification when the same words appear in a
+ * stronger phishing context.
+ */
+if (hasCredentialRequestPlusAction || hasVerificationPlusThreat) {
+  spamScore = Math.max(0, spamScore - 10);
+}
 
-  const strongPhishingSignal =
-    suspiciousUrls.length > 0 &&
+phishingScore = Math.min(97, Math.round(phishingScore));
+spamScore = Math.min(95, Math.round(spamScore));
+
+/*
+ * Classification
+ * ---------------------------------------------------------
+ * Strong combinations can classify an email even when there
+ * are only a few keyword matches. This helps with harder tests.
+ */
+let verdict = "legitimate";
+
+const strongPhishingSignal =
+  suspiciousUrls.length > 0 &&
+  (
+    hasVerification ||
+    hasCredentialRequest ||
+    hasThreat ||
+    hasActionLanguage
+  );
+
+const criticalPhishingSignal =
+  hasCredentialRequestPlusAction ||
+  hasVerificationPlusThreat ||
+  (
+    matchedLookalikeBrands.length > 0 &&
     (
       hasVerification ||
       hasCredentialRequest ||
-      hasThreat ||
-      hasActionLanguage
-    );
+      suspiciousUrls.length > 0
+    )
+  );
 
-  const criticalPhishingSignal =
-    hasCredentialRequestPlusAction ||
-    hasVerificationPlusThreat ||
-    (
-      matchedLookalikeBrands.length > 0 &&
-      (hasVerification || hasCredentialRequest || suspiciousUrls.length > 0)
-    );
+if (
+  phishingScore >= 50 ||
+  criticalPhishingSignal ||
+  (strongPhishingSignal && phishingScore >= 35)
+) {
+  verdict = "phishing";
+} else if (spamScore >= 30) {
+  verdict = "spam";
+}
 
-  if (
-    phishingScore >= 50 ||
-    criticalPhishingSignal ||
-    (strongPhishingSignal && phishingScore >= 35)
-  ) {
-    verdict = "phishing";
-  } else if (spamScore >= 30) {
-    verdict = "spam";
-  }
+/*
+ * Risk and confidence
+ */
+let riskScore = 3;
+let confidence = 95;
 
+if (verdict === "phishing") {
+  riskScore = Math.min(
+    97,
+    Math.max(
+      50,
+      phishingScore,
+      criticalPhishingSignal ? 65 : 0
+    )
+  );
+
+  confidence = Math.min(
+    99,
+    80 +
+    Math.min(matchedPhishing.length, 5) * 2 +
+    Math.min(matchedCredentials.length, 3) * 3 +
+    Math.min(suspiciousUrls.length, 2) * 4 +
+    (criticalPhishingSignal ? 7 : 0)
+  );
+
+} else if (verdict === "spam") {
+  riskScore = Math.min(
+    95,
+    Math.max(30, 20 + spamScore)
+  );
+
+  confidence = Math.min(
+    97,
+    80 + Math.min(matchedSpam.length, 6) * 2
+  );
+
+} else {
   /*
-   * Risk and confidence
+   * Legitimate risk is intentionally conservative.
+   * Generic words such as "security", "account", "verify",
+   * "payment", or "update" should not automatically make a
+   * normal email high-risk.
    */
-  let riskScore = 3;
-  let confidence = 95;
+  const weakPhishingRisk =
+    Math.min(matchedPhishing.length, 4) * 2;
 
-  if (verdict === "phishing") {
-    riskScore = Math.min(
-      97,
-      Math.max(
-        50,
-        phishingScore,
-        criticalPhishingSignal ? 65 : 0
-      )
-    );
+  const weakSpamRisk =
+    Math.min(matchedSpam.length, 4) * 2;
 
-    confidence = Math.min(
-      99,
-      80 +
-      Math.min(matchedPhishing.length, 5) * 2 +
-      Math.min(matchedCredentials.length, 3) * 3 +
-      Math.min(suspiciousUrls.length, 2) * 4 +
-      (criticalPhishingSignal ? 7 : 0)
-    );
-  } else if (verdict === "spam") {
-    riskScore = Math.min(95, Math.max(30, 20 + spamScore));
+  const weakUrgencyRisk =
+    Math.min(matchedUrgency.length, 2) * 2;
 
-    confidence = Math.min(
-      97,
-      80 + Math.min(matchedSpam.length, 6) * 2
+  const weakCredentialRisk =
+    Math.min(matchedCredentials.length, 2) * 3;
+
+  const suspiciousUrlRisk =
+    suspiciousUrls.length * 10;
+
+  const senderRisk =
+    senderLooksOff ? 6 : 0;
+
+  const brandRisk =
+    matchedLookalikeBrands.length > 0 ? 8 : 0;
+
+  const combinedRisk =
+    weakPhishingRisk +
+    weakSpamRisk +
+    weakUrgencyRisk +
+    weakCredentialRisk +
+    suspiciousUrlRisk +
+    senderRisk +
+    brandRisk;
+
+  riskScore = Math.min(
+    49,
+    Math.max(3, Math.round(combinedRisk))
+  );
+
+  confidence = Math.min(
+    97,
+    Math.max(
+      70,
+      97 - Math.round(riskScore * 0.45)
+    )
+  );
+}
+
+/*
+ * Detection reasons
+ */
+const reasons = [];
+
+if (matchedPhishing.length > 0) {
+  reasons.push(
+    `Phishing-related keywords detected: ${matchedPhishing.join(", ")}`
+  );
+}
+
+if (matchedSpam.length > 0) {
+  reasons.push(
+    `Spam-related keywords detected: ${matchedSpam.join(", ")}`
+  );
+}
+
+if (matchedUrgency.length > 0) {
+  reasons.push(
+    `Urgency indicators detected: ${matchedUrgency.join(", ")}`
+  );
+}
+
+if (matchedCredentials.length > 0) {
+  reasons.push(
+    `Credential-related terms detected: ${matchedCredentials.join(", ")}`
+  );
+}
+
+if (suspiciousUrls.length > 0) {
+  reasons.push(
+    `${suspiciousUrls.length} suspicious URL(s) detected`
+  );
+}
+
+if (senderLooksOff) {
+  reasons.push("Sender format appears unusual");
+}
+
+if (matchedLookalikeBrands.length > 0) {
+  reasons.push(
+    `Possible brand impersonation detected: ${matchedLookalikeBrands.join(", ")}`
+  );
+}
+
+if (hasVerificationPlusThreat) {
+  reasons.push(
+    "Verification language is combined with an account threat"
+  );
+}
+
+if (hasCredentialRequestPlusAction) {
+  reasons.push(
+    "Credential-related information is requested together with an action"
+  );
+}
+
+if (hasVerificationLink) {
+  reasons.push(
+    "Verification or credential-related language is paired with a URL"
+  );
+}
+
+if (urlMatches.length === 0) {
+  reasons.push("No URLs detected in the email body");
+}
+
+const indicatorCount =
+  matchedPhishing.length +
+  matchedSpam.length +
+  matchedUrgency.length +
+  matchedCredentials.length +
+  suspiciousUrls.length +
+  (senderLooksOff ? 1 : 0) +
+  (matchedLookalikeBrands.length > 0 ? 1 : 0);
+
+if (verdict === "legitimate") {
+  if (indicatorCount === 0) {
+    reasons.push(
+      "No suspicious phishing, spam, sender, or URL indicators detected"
     );
   } else {
-    /*
-     * Legitimate risk is intentionally conservative.
-     * Generic words such as "security", "account", "verify",
-     * "payment", or "update" should not automatically make a
-     * normal email high-risk.
-     */
-    const weakPhishingRisk =
-      Math.min(matchedPhishing.length, 4) * 2;
-
-    const weakSpamRisk =
-      Math.min(matchedSpam.length, 4) * 2;
-
-    const weakUrgencyRisk =
-      Math.min(matchedUrgency.length, 2) * 2;
-
-    const weakCredentialRisk =
-      Math.min(matchedCredentials.length, 2) * 3;
-
-    const suspiciousUrlRisk =
-      suspiciousUrls.length * 10;
-
-    const senderRisk =
-      senderLooksOff ? 6 : 0;
-
-    const brandRisk =
-      matchedLookalikeBrands.length > 0 ? 8 : 0;
-
-    const combinedRisk =
-      weakPhishingRisk +
-      weakSpamRisk +
-      weakUrgencyRisk +
-      weakCredentialRisk +
-      suspiciousUrlRisk +
-      senderRisk +
-      brandRisk;
-
-    riskScore = Math.min(
-      49,
-      Math.max(3, Math.round(combinedRisk))
-    );
-
-    confidence = Math.min(
-      97,
-      Math.max(70, 97 - Math.round(riskScore * 0.45))
-    );
-  }
-
-  /*
-   * Detection reasons
-   */
-  const reasons = [];
-
-  if (matchedPhishing.length > 0) {
     reasons.push(
-      `Phishing-related keywords detected: ${matchedPhishing.join(", ")}`
+      "Some generic indicators were detected, but strong phishing or spam patterns were not found"
     );
   }
+}
 
-  if (matchedSpam.length > 0) {
-    reasons.push(
-      `Spam-related keywords detected: ${matchedSpam.join(", ")}`
-    );
-  }
+if (reasons.length === 0) {
+  reasons.push("No significant indicators detected");
+}
 
-  if (matchedUrgency.length > 0) {
-    reasons.push(
-      `Urgency indicators detected: ${matchedUrgency.join(", ")}`
-    );
-  }
-
-  if (matchedCredentials.length > 0) {
-    reasons.push(
-      `Credential-related terms detected: ${matchedCredentials.join(", ")}`
-    );
-  }
-
-  if (suspiciousUrls.length > 0) {
-    reasons.push(
-      `${suspiciousUrls.length} suspicious URL(s) detected`
-    );
-  }
-
-  if (senderLooksOff) {
-    reasons.push("Sender format appears unusual");
-  }
-
-  if (matchedLookalikeBrands.length > 0) {
-    reasons.push(
-      `Possible brand impersonation detected: ${matchedLookalikeBrands.join(", ")}`
-    );
-  }
-
-  if (hasVerificationPlusThreat) {
-    reasons.push(
-      "Verification language is combined with an account threat"
-    );
-  }
-
-  if (hasCredentialRequestPlusAction) {
-    reasons.push(
-      "Credential-related information is requested together with an action"
-    );
-  }
-
-  if (hasVerificationLink) {
-    reasons.push(
-      "Verification or credential-related language is paired with a URL"
-    );
-  }
-
-  if (urlMatches.length === 0) {
-    reasons.push("No URLs detected in the email body");
-  }
-
-  const indicatorCount =
-    matchedPhishing.length +
-    matchedSpam.length +
-    matchedUrgency.length +
-    matchedCredentials.length +
-    suspiciousUrls.length +
-    (senderLooksOff ? 1 : 0) +
-    (matchedLookalikeBrands.length > 0 ? 1 : 0);
-
-  if (verdict === "legitimate") {
-    if (indicatorCount === 0) {
-      reasons.push(
-        "No suspicious phishing, spam, sender, or URL indicators detected"
-      );
-    } else {
-      reasons.push(
-        "Some generic indicators were detected, but strong phishing or spam patterns were not found"
-      );
-    }
-  }
-
-  if (reasons.length === 0) {
-    reasons.push("No significant indicators detected");
-  }
-
-  return {
-    verdict,
-    riskScore,
-    confidence,
-    reasons,
-    matchedPhishing,
-    matchedSpam,
-    matchedUrgency,
-    matchedCredentials,
-    matchedLookalikeBrands,
-    urlMatches,
-    suspiciousUrls,
-    senderDomain,
-    phishingScore,
-    spamScore
-  };
+return {
+  verdict,
+  riskScore,
+  confidence,
+  reasons,
+  matchedPhishing,
+  matchedSpam,
+  matchedUrgency,
+  matchedCredentials,
+  matchedLookalikeBrands,
+  urlMatches,
+  suspiciousUrls,
+  senderDomain,
+  phishingScore,
+  spamScore
+};
 }
 
 
 /* =========================================================
-   HELPERS
-   ========================================================= */
+ * HELPERS
+ * ========================================================= */
 
 function findMatches(text, keywords) {
   return keywords.filter(function (keyword) {
@@ -4500,6 +4523,7 @@ function isSuspiciousUrl(url) {
       hasSuspiciousPath ||
       hasMultipleActionTerms
     );
+
   } catch (error) {
     return true;
   }
@@ -4558,9 +4582,8 @@ function isValidEmail(email) {
 
 
 /* =========================================================
-   RESULTS
-   ========================================================= */
-
+ * RESULTS
+ * ========================================================= */
 
 function renderResults(result) {
   if (resultEmpty) {
@@ -4607,7 +4630,6 @@ function renderResults(result) {
   }
 
   // Keyword Analysis
-  
   if (keywordList) {
     keywordList.innerHTML = "";
 
@@ -4686,7 +4708,6 @@ function renderResults(result) {
     }
   }
 }
-
 
 /* =========================================================
    FORM ERRORS
