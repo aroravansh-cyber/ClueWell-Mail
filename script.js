@@ -31,48 +31,291 @@ let lastAnalysis = null;
 /* =========================================================
    KEYWORDS
    ========================================================= */
+// ============================================================
+// PHISHING DETECTION KEYWORDS
+// ============================================================
 
 const phishingKeywords = [
+
+  // Account verification
   "verify your account",
   "verify account",
+  "account verification required",
+  "account verification",
   "confirm your account",
+  "confirm account details",
   "confirm your identity",
+  "verify your identity",
+  "identity verification required",
   "complete verification",
-  "security alert",
-  "security notice",
-  "unusual activity",
-  "suspicious activity",
-  "unrecognized login",
-  "unrecognized device",
-  "unauthorized access",
+  "complete account verification",
+  "account verification pending",
+  "verification required",
+  "verification is required",
+  "verify now",
+  "verify immediately",
+  "validate your account",
+  "validate your identity",
+  "authenticate your account",
+  "revalidate your account",
+
+  // Account restriction / suspension
   "account suspended",
+  "account will be suspended",
+  "account has been suspended",
   "account locked",
+  "account will be locked",
+  "account has been locked",
   "account blocked",
   "account restricted",
+  "account access restricted",
+  "account temporarily restricted",
   "account terminated",
-  "action required",
-  "immediate action",
-  "update your information",
-  "update payment information",
-  "verify payment",
-  "confirm payment",
-  "reset your password",
-  "password expires",
-  "login attempt",
-  "secure your account",
-  "security verification",
-  "identity verification",
-  "account recovery",
-  "click here to verify",
+  "account will be terminated",
+  "account disabled",
+  "account will be disabled",
+  "account deactivated",
+  "account will be deactivated",
+  "account closure",
+  "account will be closed",
   "your account will be closed",
   "your account will be deleted",
+  "access will be revoked",
+  "access has been restricted",
+  "access has been suspended",
+
+  // Security alerts
+  "security alert",
+  "security warning",
+  "security notice",
+  "security notification",
+  "security verification",
+  "security check required",
+  "security action required",
+  "security issue detected",
+  "security problem detected",
+  "unusual activity",
+  "suspicious activity",
+  "suspicious sign in",
+  "suspicious login",
+  "unusual sign in",
+  "unusual login",
+  "unrecognized login",
+  "unrecognized sign in",
+  "unrecognized device",
+  "unknown device",
+  "unknown login",
+  "unauthorized access",
+  "unauthorized login",
+  "unauthorized activity",
+  "unauthorized transaction",
+  "suspicious transaction",
+  "fraudulent activity detected",
+  "potential fraud detected",
+  "possible fraud detected",
+
+  // Login / password
+  "reset your password",
+  "password reset required",
+  "password expires",
+  "password has expired",
+  "password will expire",
+  "password verification",
+  "verify your password",
+  "confirm your password",
+  "enter your password",
+  "provide your password",
+  "submit your password",
+  "login attempt",
+  "failed login attempt",
+  "new login detected",
+  "new sign in detected",
+  "sign in required",
+  "login required",
+  "confirm login",
+  "confirm sign in",
+  "secure your account",
+  "protect your account",
+  "restore account access",
+  "recover your account",
+
+  // Payment / banking
+  "update payment information",
+  "update your payment information",
+  "verify payment",
+  "verify your payment",
+  "confirm payment",
+  "confirm your payment",
+  "payment verification required",
+  "payment method expired",
+  "payment method has expired",
+  "payment failed",
+  "payment could not be processed",
+  "billing information",
+  "billing verification",
+  "bank account verification",
+  "verify bank account",
+  "confirm bank account",
+  "verify banking information",
+  "confirm banking information",
+  "update banking information",
+  "update bank details",
+  "confirm bank details",
+  "bank details required",
+
+  // Link-based phishing
+  "click here to verify",
+  "click here to confirm",
+  "click here to secure",
+  "click here to continue",
+  "click here to login",
+  "click here to sign in",
+  "click the link below",
+  "click the link",
+  "follow the link below",
+  "use the link below",
+  "verify using the link",
+  "complete verification using the link",
+  "login using the link",
+
+  // Consequences
   "failure to verify",
-  "complete the process",
+  "failure to confirm",
+  "failure to respond",
+  "failure to complete",
+  "your access will be restricted",
+  "your access will be removed",
+  "your account may be locked",
+  "your account may be suspended",
+  "your account may be disabled",
+  "your account may be terminated",
+  "service interruption",
+  "service will be interrupted",
+  "avoid account closure",
+  "prevent account suspension",
+
+  // Time pressure
   "within 24 hours",
-  "within 48 hours"
+  "within 48 hours",
+  "within 12 hours",
+  "before midnight",
+  "before the deadline",
+  "before your account is locked",
+  "before your account is suspended"
 ];
 
+
+// ============================================================
+// SCAM / FRAUD KEYWORDS
+// ============================================================
+
+const scamKeywords = [
+
+  // Prize / lottery
+  "you have won",
+  "you are a winner",
+  "congratulations you won",
+  "claim your prize",
+  "claim your reward",
+  "claim your winnings",
+  "lottery winner",
+  "lottery prize",
+  "cash prize",
+  "grand prize",
+  "prize money",
+  "winner notification",
+  "selected as a winner",
+  "selected to receive",
+  "exclusive reward",
+  "unclaimed prize",
+
+  // Investment scams
+  "guaranteed profit",
+  "guaranteed returns",
+  "guaranteed income",
+  "guaranteed investment",
+  "risk free investment",
+  "no risk investment",
+  "double your money",
+  "triple your money",
+  "multiply your investment",
+  "make money fast",
+  "get rich quickly",
+  "easy money",
+  "passive income opportunity",
+  "investment opportunity",
+  "exclusive investment opportunity",
+  "limited investment opportunity",
+  "crypto investment",
+  "crypto profits",
+  "guaranteed crypto returns",
+  "trading opportunity",
+
+  // Advance-fee scams
+  "processing fee",
+  "release fee",
+  "transfer fee",
+  "activation fee",
+  "administrative fee",
+  "clearance fee",
+  "customs fee",
+  "pay a fee",
+  "send a payment",
+  "send money",
+  "wire transfer",
+  "bank transfer required",
+  "payment required before release",
+  "fee required to receive",
+
+  // Fake refund / compensation
+  "refund available",
+  "refund pending",
+  "claim your refund",
+  "refund is ready",
+  "compensation payment",
+  "payment recovery",
+  "overpayment refund",
+  "tax refund",
+  "government refund",
+
+  // Romance / inheritance / unexpected money
+  "inheritance",
+  "inheritance fund",
+  "beneficiary",
+  "estate beneficiary",
+  "fund transfer",
+  "financial assistance",
+  "urgent financial help",
+  "million dollar inheritance",
+
+  // Job / income scams
+  "work from home",
+  "earn money from home",
+  "earn money online",
+  "make money online",
+  "easy online income",
+  "guaranteed income",
+  "no experience required",
+  "get paid to",
+  "job opportunity",
+  "exclusive job offer",
+
+  // Fake charity / donations
+  "donate now",
+  "urgent donation",
+  "emergency donation",
+  "charity donation",
+  "help victims",
+  "send your donation"
+];
+
+
+// ============================================================
+// SPAM / PROMOTIONAL KEYWORDS
+// ============================================================
+
 const spamKeywords = [
+
   "exclusive offer",
   "special offer",
   "limited offer",
@@ -80,9 +323,7 @@ const spamKeywords = [
   "discount",
   "big discount",
   "free gift",
-  "claim your prize",
-  "you have won",
-  "congratulations",
+  "free bonus",
   "buy now",
   "shop now",
   "limited time",
@@ -93,72 +334,309 @@ const spamKeywords = [
   "promo code",
   "coupon code",
   "cashback",
-  "make money fast",
-  "work from home",
-  "earn money",
-  "cheap price",
-  "risk free",
-  "no investment",
-  "act fast",
-  "offer expires",
+  "special promotion",
+  "seasonal sale",
+  "flash sale",
+  "mega sale",
+  "clearance sale",
+  "save up to",
+  "lowest price",
+  "exclusive discount",
+  "free trial",
   "subscribe now",
-  "get rich",
-  "free trial"
+  "unsubscribe",
+  "special price",
+  "today only"
 ];
+
+
+// ============================================================
+// URGENCY KEYWORDS
+// ============================================================
 
 const urgencyKeywords = [
+
   "urgent",
+  "urgently",
   "immediately",
+  "immediate action",
+  "immediate response",
   "act now",
   "action required",
+  "action is required",
   "final warning",
+  "final notice",
+  "last warning",
   "last chance",
   "expires today",
+  "expires soon",
+  "offer expires",
   "respond immediately",
+  "respond now",
+  "reply immediately",
+  "do not delay",
+  "do not ignore",
+  "time sensitive",
+  "time-sensitive",
+  "critical action required",
+  "as soon as possible",
+  "without delay",
+  "right away",
+  "today",
   "within 24 hours",
   "within 48 hours",
-  "do not delay",
-  "time sensitive",
-  "immediate response",
-  "as soon as possible"
+  "within 12 hours",
+  "before it is too late",
+  "deadline",
+  "immediate attention required"
 ];
 
+
+// ============================================================
+// CREDENTIAL / SENSITIVE INFORMATION KEYWORDS
+// ============================================================
+
 const credentialKeywords = [
+
+  // Login credentials
   "login credentials",
   "account credentials",
+  "user credentials",
   "username and password",
+  "username & password",
+  "enter your username",
   "enter your password",
   "provide your password",
+  "submit your password",
+  "confirm your password",
+  "current password",
+  "account password",
+  "login password",
+
+  // OTP / MFA
   "security code",
   "verification code",
   "authentication code",
+  "authentication token",
   "one time password",
+  "one-time password",
+  "one time passcode",
+  "one-time passcode",
   "otp",
+  "mfa code",
+  "2fa code",
+  "two factor authentication code",
+  "six digit code",
+  "six-digit code",
+  "verification pin",
+
+  // PIN
   "pin",
+  "account pin",
+  "security pin",
+  "verification pin",
+
+  // Card information
   "credit card number",
   "debit card number",
-  "bank account details",
+  "card number",
+  "card details",
+  "credit card details",
+  "debit card details",
   "cvv",
-  "card details"
+  "cvc",
+  "expiration date",
+  "expiry date",
+  "card verification value",
+
+  // Banking
+  "bank account details",
+  "bank account number",
+  "bank details",
+  "banking information",
+  "routing number",
+  "account number",
+  "sort code",
+  "ifsc code",
+
+  // Personal information
+  "social security number",
+  "government id",
+  "identity document",
+  "passport number",
+  "driver license",
+  "driving licence",
+  "date of birth",
+  "personal information",
+  "personal details"
 ];
 
+
+// ============================================================
+// SUSPICIOUS SENDER / DOMAIN PATTERNS
+// ============================================================
+
 const brandVariants = [
+
+  // PayPal
   "paypa1",
   "pay-pal",
+  "paypal-security",
+  "paypal-support",
+  "paypal-verification",
+  "secure-paypal",
+
+  // Microsoft
   "micros0ft",
   "micro-soft",
+  "microsoft-security",
+  "microsoft-support",
+  "microsoft-verification",
+
+  // Google
+  "g00gle",
+  "google-security",
+  "google-support",
+  "google-verification",
+
+  // Amazon
   "amaz0n",
   "amaz-on",
-  "g00gle",
-  "faceb00k",
+  "amazon-security",
+  "amazon-support",
+  "amazon-verification",
+
+  // Apple
   "app1e",
+  "apple-security",
+  "apple-support",
+  "apple-verification",
+
+  // Netflix
   "netfl1x",
+  "netflix-security",
+  "netflix-support",
+  "netflix-verification",
+
+  // LinkedIn
   "linkedln",
-  "dell-support",
+  "linkedin-security",
+  "linkedin-support",
+
+  // Social media
+  "faceb00k",
+  "facebook-security",
+  "facebook-support",
+  "instagram-security",
+  "instagram-support",
+
+  // Generic impersonation
   "bank-security",
-  "secure-paypal",
-  "microsoft-security",
-  "amazon-security"
+  "bank-support",
+  "bank-verification",
+  "account-security",
+  "account-support",
+  "security-verification",
+  "secure-login",
+  "secure-account",
+  "security-alert"
+];
+
+
+// ============================================================
+// SUSPICIOUS ACTION PHRASES
+// ============================================================
+
+const suspiciousActionKeywords = [
+
+  "enter your information",
+  "enter your details",
+  "provide your information",
+  "provide your details",
+  "submit your information",
+  "confirm your details",
+  "confirm personal information",
+  "send your information",
+  "send your credentials",
+  "send your password",
+  "send the verification code",
+  "send the security code",
+  "reply with your",
+  "reply with your password",
+  "reply with the code",
+  "click and verify",
+  "click to verify",
+  "click to confirm",
+  "log in to continue",
+  "sign in to continue",
+  "verify before continuing",
+  "complete the process",
+  "complete the security check",
+  "complete the verification process"
+];
+
+
+// ============================================================
+// SUSPICIOUS FINANCIAL LANGUAGE
+// ============================================================
+
+const financialKeywords = [
+
+  "bank account",
+  "bank details",
+  "banking details",
+  "payment details",
+  "payment information",
+  "card details",
+  "card information",
+  "credit card",
+  "debit card",
+  "account number",
+  "routing number",
+  "wire transfer",
+  "bank transfer",
+  "payment request",
+  "payment confirmation",
+  "transaction",
+  "transaction detected",
+  "transaction failed",
+  "transaction declined",
+  "unauthorized transaction",
+  "refund",
+  "invoice",
+  "overdue payment",
+  "outstanding payment",
+  "salary payment",
+  "payroll information"
+];
+
+
+// ============================================================
+// SOCIAL ENGINEERING KEYWORDS
+// ============================================================
+
+const socialEngineeringKeywords = [
+
+  "keep this confidential",
+  "do not tell anyone",
+  "do not tell your manager",
+  "do not discuss this",
+  "keep this private",
+  "between you and me",
+  "urgent favor",
+  "quick favor",
+  "are you available",
+  "need your help",
+  "i need your help",
+  "send me the code",
+  "send me the verification code",
+  "send me the gift card",
+  "buy gift cards",
+  "purchase gift cards",
+  "send the gift card code",
+  "urgent payment request",
+  "wire the money",
+  "process this payment"
 ];
 
 
