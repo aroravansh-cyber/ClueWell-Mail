@@ -3,7 +3,12 @@
    Rule-Based Email Phishing, Spam & Legitimate Analyzer
    ========================================================= */
 
+/* =========================================================
+   DOM ELEMENTS
+   ========================================================= */
+
 const form = document.getElementById("analyzer-form");
+
 const senderInput = document.getElementById("sender-email");
 const subjectInput = document.getElementById("email-subject");
 const bodyInput = document.getElementById("email-body");
@@ -21,23 +26,22 @@ const riskScoreEl = document.getElementById("risk-score");
 const confidenceScoreEl = document.getElementById("confidence-score");
 
 const reasonList = document.getElementById("reason-list");
+
 const urlsDetectedEl = document.getElementById("urls-detected");
 const urlsSuspiciousEl = document.getElementById("urls-suspicious");
+
 const keywordList = document.getElementById("keyword-list");
 
 let lastAnalysis = null;
 
 
 /* =========================================================
-   KEYWORDS
+   PHISHING KEYWORDS
    ========================================================= */
-// ============================================================
-// PHISHING DETECTION KEYWORDS
-// ============================================================
 
 const phishingKeywords = [
 
-  // Account verification
+  /* Account verification */
   "verify your account",
   "verify account",
   "account verification required",
@@ -59,7 +63,7 @@ const phishingKeywords = [
   "authenticate your account",
   "revalidate your account",
 
-  // Account restriction / suspension
+  /* Account restriction */
   "account suspended",
   "account will be suspended",
   "account has been suspended",
@@ -84,7 +88,7 @@ const phishingKeywords = [
   "access has been restricted",
   "access has been suspended",
 
-  // Security alerts
+  /* Security alerts */
   "security alert",
   "security warning",
   "security notice",
@@ -114,7 +118,7 @@ const phishingKeywords = [
   "potential fraud detected",
   "possible fraud detected",
 
-  // Login / password
+  /* Login / password */
   "reset your password",
   "password reset required",
   "password expires",
@@ -139,7 +143,7 @@ const phishingKeywords = [
   "restore account access",
   "recover your account",
 
-  // Payment / banking
+  /* Payment / banking */
   "update payment information",
   "update your payment information",
   "verify payment",
@@ -163,7 +167,7 @@ const phishingKeywords = [
   "confirm bank details",
   "bank details required",
 
-  // Link-based phishing
+  /* Link phishing */
   "click here to verify",
   "click here to confirm",
   "click here to secure",
@@ -178,7 +182,7 @@ const phishingKeywords = [
   "complete verification using the link",
   "login using the link",
 
-  // Consequences
+  /* Consequences */
   "failure to verify",
   "failure to confirm",
   "failure to respond",
@@ -194,7 +198,7 @@ const phishingKeywords = [
   "avoid account closure",
   "prevent account suspension",
 
-  // Time pressure
+  /* Time pressure */
   "within 24 hours",
   "within 48 hours",
   "within 12 hours",
@@ -205,13 +209,12 @@ const phishingKeywords = [
 ];
 
 
-// ============================================================
-// SCAM / FRAUD KEYWORDS
-// ============================================================
+/* =========================================================
+   SCAM / FRAUD KEYWORDS
+   ========================================================= */
 
 const scamKeywords = [
 
-  // Prize / lottery
   "you have won",
   "you are a winner",
   "congratulations you won",
@@ -229,7 +232,6 @@ const scamKeywords = [
   "exclusive reward",
   "unclaimed prize",
 
-  // Investment scams
   "guaranteed profit",
   "guaranteed returns",
   "guaranteed income",
@@ -251,7 +253,6 @@ const scamKeywords = [
   "guaranteed crypto returns",
   "trading opportunity",
 
-  // Advance-fee scams
   "processing fee",
   "release fee",
   "transfer fee",
@@ -267,7 +268,6 @@ const scamKeywords = [
   "payment required before release",
   "fee required to receive",
 
-  // Fake refund / compensation
   "refund available",
   "refund pending",
   "claim your refund",
@@ -278,7 +278,6 @@ const scamKeywords = [
   "tax refund",
   "government refund",
 
-  // Romance / inheritance / unexpected money
   "inheritance",
   "inheritance fund",
   "beneficiary",
@@ -288,7 +287,6 @@ const scamKeywords = [
   "urgent financial help",
   "million dollar inheritance",
 
-  // Job / income scams
   "work from home",
   "earn money from home",
   "earn money online",
@@ -300,7 +298,6 @@ const scamKeywords = [
   "job opportunity",
   "exclusive job offer",
 
-  // Fake charity / donations
   "donate now",
   "urgent donation",
   "emergency donation",
@@ -310,49 +307,51 @@ const scamKeywords = [
 ];
 
 
-// ============================================================
-// SPAM / PROMOTIONAL KEYWORDS
-// ============================================================
+/* =========================================================
+   SPAM / PROMOTIONAL KEYWORDS
+   ========================================================= */
 
 const spamKeywords = [
 
-  "exclusive offer",
-  "special offer",
-  "limited offer",
-  "amazing offer",
+  "sale",
   "discount",
-  "big discount",
+  "deal",
+  "coupon",
+  "promotion",
+  "promotional",
+  "special offer",
+  "exclusive offer",
+  "limited time offer",
   "free gift",
-  "free bonus",
+  "bonus",
+  "reward",
+  "cashback",
+  "newsletter",
+  "marketing",
+  "advertisement",
+  "advertising",
+  "unsubscribe",
+  "mailing list",
   "buy now",
   "shop now",
-  "limited time",
-  "last chance",
-  "huge savings",
-  "best deal",
-  "deal of the day",
-  "promo code",
-  "coupon code",
-  "cashback",
-  "special promotion",
-  "seasonal sale",
-  "flash sale",
-  "mega sale",
-  "clearance sale",
-  "save up to",
-  "lowest price",
-  "exclusive discount",
-  "free trial",
+  "order now",
   "subscribe now",
-  "unsubscribe",
-  "special price",
-  "today only"
+  "claim now",
+  "join now",
+  "get yours",
+  "book now",
+  "save now",
+  "act now",
+  "don't miss",
+  "hurry",
+  "ends soon",
+  "offer expires"
 ];
 
 
-// ============================================================
-// URGENCY KEYWORDS
-// ============================================================
+/* =========================================================
+   URGENCY KEYWORDS
+   ========================================================= */
 
 const urgencyKeywords = [
 
@@ -392,13 +391,12 @@ const urgencyKeywords = [
 ];
 
 
-// ============================================================
-// CREDENTIAL / SENSITIVE INFORMATION KEYWORDS
-// ============================================================
+/* =========================================================
+   CREDENTIAL / SENSITIVE INFORMATION KEYWORDS
+   ========================================================= */
 
 const credentialKeywords = [
 
-  // Login credentials
   "login credentials",
   "account credentials",
   "user credentials",
@@ -413,7 +411,6 @@ const credentialKeywords = [
   "account password",
   "login password",
 
-  // OTP / MFA
   "security code",
   "verification code",
   "authentication code",
@@ -430,13 +427,10 @@ const credentialKeywords = [
   "six-digit code",
   "verification pin",
 
-  // PIN
   "pin",
   "account pin",
   "security pin",
-  "verification pin",
 
-  // Card information
   "credit card number",
   "debit card number",
   "card number",
@@ -449,7 +443,6 @@ const credentialKeywords = [
   "expiry date",
   "card verification value",
 
-  // Banking
   "bank account details",
   "bank account number",
   "bank details",
@@ -459,7 +452,6 @@ const credentialKeywords = [
   "sort code",
   "ifsc code",
 
-  // Personal information
   "social security number",
   "government id",
   "identity document",
@@ -472,13 +464,12 @@ const credentialKeywords = [
 ];
 
 
-// ============================================================
-// SUSPICIOUS SENDER / DOMAIN PATTERNS
-// ============================================================
+/* =========================================================
+   SUSPICIOUS BRAND VARIANTS
+   ========================================================= */
 
 const brandVariants = [
 
-  // PayPal
   "paypa1",
   "pay-pal",
   "paypal-security",
@@ -486,51 +477,43 @@ const brandVariants = [
   "paypal-verification",
   "secure-paypal",
 
-  // Microsoft
   "micros0ft",
   "micro-soft",
   "microsoft-security",
   "microsoft-support",
   "microsoft-verification",
 
-  // Google
   "g00gle",
   "google-security",
   "google-support",
   "google-verification",
 
-  // Amazon
   "amaz0n",
   "amaz-on",
   "amazon-security",
   "amazon-support",
   "amazon-verification",
 
-  // Apple
   "app1e",
   "apple-security",
   "apple-support",
   "apple-verification",
 
-  // Netflix
   "netfl1x",
   "netflix-security",
   "netflix-support",
   "netflix-verification",
 
-  // LinkedIn
   "linkedln",
   "linkedin-security",
   "linkedin-support",
 
-  // Social media
   "faceb00k",
   "facebook-security",
   "facebook-support",
   "instagram-security",
   "instagram-support",
 
-  // Generic impersonation
   "bank-security",
   "bank-support",
   "bank-verification",
@@ -543,9 +526,9 @@ const brandVariants = [
 ];
 
 
-// ============================================================
-// SUSPICIOUS ACTION PHRASES
-// ============================================================
+/* =========================================================
+   SUSPICIOUS ACTION PHRASES
+   ========================================================= */
 
 const suspiciousActionKeywords = [
 
@@ -576,9 +559,9 @@ const suspiciousActionKeywords = [
 ];
 
 
-// ============================================================
-// SUSPICIOUS FINANCIAL LANGUAGE
-// ============================================================
+/* =========================================================
+   FINANCIAL KEYWORDS
+   ========================================================= */
 
 const financialKeywords = [
 
@@ -611,9 +594,9 @@ const financialKeywords = [
 ];
 
 
-// ============================================================
-// SOCIAL ENGINEERING KEYWORDS
-// ============================================================
+/* =========================================================
+   SOCIAL ENGINEERING KEYWORDS
+   ========================================================= */
 
 const socialEngineeringKeywords = [
 
@@ -669,6 +652,7 @@ if (downloadBtn) {
    ========================================================= */
 
 function initializeMobileNavigation() {
+
   const toggleButtons = document.querySelectorAll(
     ".nav-toggle, .menu-toggle, #menu-toggle, #hamburger-btn"
   );
@@ -683,23 +667,41 @@ function initializeMobileNavigation() {
   }
 
   toggleButtons.forEach(function (button) {
+
     button.addEventListener("click", function () {
-      const isOpen = navigation.classList.toggle("active");
+
+      const isOpen =
+        navigation.classList.toggle("active");
 
       button.classList.toggle("active", isOpen);
-      button.setAttribute("aria-expanded", String(isOpen));
+
+      button.setAttribute(
+        "aria-expanded",
+        String(isOpen)
+      );
     });
+
   });
 
   navigation.querySelectorAll("a").forEach(function (link) {
+
     link.addEventListener("click", function () {
+
       navigation.classList.remove("active");
 
       toggleButtons.forEach(function (button) {
+
         button.classList.remove("active");
-        button.setAttribute("aria-expanded", "false");
+
+        button.setAttribute(
+          "aria-expanded",
+          "false"
+        );
+
       });
+
     });
+
   });
 }
 
@@ -707,443 +709,1502 @@ initializeMobileNavigation();
 
 
 /* =========================================================
-   ANALYSIS
+   MAIN ANALYSIS
    ========================================================= */
 
 function runAnalysis() {
-  const sender = senderInput ? senderInput.value.trim() : "";
-  const subject = subjectInput ? subjectInput.value.trim() : "";
-  const body = bodyInput ? bodyInput.value.trim() : "";
 
-  clearFieldErrors();
+  try {
 
-  if (sender && !isValidEmail(sender)) {
-    setFieldError(senderInput, "Please enter a valid sender email.");
-    return;
+    const sender =
+      senderInput
+        ? senderInput.value.trim()
+        : "";
+
+    const subject =
+      subjectInput
+        ? subjectInput.value.trim()
+        : "";
+
+    const body =
+      bodyInput
+        ? bodyInput.value.trim()
+        : "";
+
+    clearFieldErrors();
+
+    if (sender && !isValidEmail(sender)) {
+
+      setFieldError(
+        senderInput,
+        "Please enter a valid sender email."
+      );
+
+      return;
+    }
+
+    if (!body) {
+
+      setFieldError(
+        bodyInput,
+        "Email body is required."
+      );
+
+      return;
+    }
+
+    const input = {
+      sender,
+      subject,
+      body
+    };
+
+    const result =
+      analyzeEmail(input);
+
+    lastAnalysis = {
+      input,
+      result
+    };
+
+    renderResults(result);
+
+  } catch (error) {
+
+    console.error(
+      "ClueWell Mail analysis error:",
+      error
+    );
+
+    alert(
+      "An error occurred while analyzing the email. Please check the browser console."
+    );
   }
-
-  if (!body) {
-    setFieldError(bodyInput, "Email body is required.");
-    return;
-  }
-
-  const input = {
-    sender,
-    subject,
-    body
-  };
-
-  const result = analyzeEmail(input);
-
-  lastAnalysis = {
-    input,
-    result
-  };
-
-  renderResults(result);
 }
 
+
+/* =========================================================
+   EMAIL ANALYZER
+   ========================================================= */
+
 function analyzeEmail(input) {
-  const sender = input.sender.toLowerCase();
-  const subject = input.subject.toLowerCase();
-  const body = input.body.toLowerCase();
 
-  const text = `${subject} ${body}`
-    .replace(/\s+/g, " ")
-    .trim();
+  const sender =
+    String(input.sender || "")
+      .trim()
+      .toLowerCase();
 
-  const matchedPhishing = findMatches(text, phishingKeywords);
-  const matchedSpam = findMatches(text, spamKeywords);
-  const matchedUrgency = findMatches(text, urgencyKeywords);
-  const matchedCredentials = findMatches(text, credentialKeywords);
+  const subject =
+    String(input.subject || "")
+      .trim()
+      .toLowerCase();
+
+  const body =
+    String(input.body || "")
+      .trim()
+      .toLowerCase();
+
+  const text =
+    normalizeText(
+      `${subject} ${body}`
+    );
+
+
+  /* ---------------------------------------------------------
+     MATCH KEYWORDS
+     --------------------------------------------------------- */
+
+  const matchedPhishing =
+    findMatches(
+      text,
+      phishingKeywords
+    );
+
+  const matchedSpam =
+    findMatches(
+      text,
+      spamKeywords
+    );
+
+  const matchedUrgency =
+    findMatches(
+      text,
+      urgencyKeywords
+    );
+
+  const matchedCredentials =
+    findMatches(
+      text,
+      credentialKeywords
+    );
+
+  const matchedFinancial =
+    findMatches(
+      text,
+      financialKeywords
+    );
+
+  const matchedSocialEngineering =
+    findMatches(
+      text,
+      socialEngineeringKeywords
+    );
+
+  const matchedSuspiciousActions =
+    findMatches(
+      text,
+      suspiciousActionKeywords
+    );
+
+
+  /* ---------------------------------------------------------
+     URL ANALYSIS
+     --------------------------------------------------------- */
 
   const urlMatches =
-    input.body.match(/https?:\/\/[^\s<>"')]+/gi) || [];
+    body.match(
+      /\bhttps?:\/\/[^\s<>"')]+|\bwww\.[^\s<>"')]+/gi
+    ) || [];
 
-  const suspiciousUrls = urlMatches.filter(isSuspiciousUrl);
+  const suspiciousUrls =
+    urlMatches.filter(
+      isSuspiciousUrl
+    );
 
-  const senderDomain = getSenderDomain(sender);
-  const senderLooksOff = isUnusualSender(sender);
 
-  const matchedLookalikeBrands = brandVariants.filter(function (brand) {
-    return sender.includes(brand);
-  });
+  /* ---------------------------------------------------------
+     SENDER ANALYSIS
+     --------------------------------------------------------- */
+
+  const senderDomain =
+    getSenderDomain(sender);
+
+  const senderLooksOff =
+    isUnusualSender(sender);
+
+  const matchedLookalikeBrands =
+    brandVariants.filter(
+      function (brand) {
+
+        return sender.includes(
+          brand.toLowerCase()
+        );
+
+      }
+    );
+
+
+  /* =========================================================
+     CONTEXTUAL SIGNALS
+     ========================================================= */
+
+  const hasVerification =
+    /\b(verify|verification|confirm|authenticate|revalidate)\b/
+      .test(text);
+
+  const hasThreat =
+    /\b(suspended|blocked|locked|restricted|terminated|closure|disabled|deactivated|revoked)\b/
+      .test(text);
+
+  const hasPaymentLanguage =
+    /\b(payment|invoice|billing|bank|wire transfer|transaction|refund|financial)\b/
+      .test(text);
+
+  const hasPaymentAction =
+    /\b(pay|payment|send money|send a payment|wire the money|arrange payment|complete payment|payment must be completed|update payment information)\b/
+      .test(text);
+
+  const hasPressure =
+    matchedUrgency.length > 0 ||
+    /\b(avoid additional charges|avoid charges|avoid penalty|penalty|consequences|final notice)\b/
+      .test(text);
+
+  const hasSensitiveRequest =
+    matchedCredentials.length > 0 ||
+    matchedSocialEngineering.length > 0 ||
+    /\b(enter your|provide your|submit your|send your)\b/
+      .test(text);
+
+
+  /* =========================================================
+     PHISHING SCORE
+     ========================================================= */
 
   let phishingScore = 0;
 
-  phishingScore += matchedPhishing.length * 15;
-  phishingScore += suspiciousUrls.length * 20;
+  /* Direct phishing language */
+  phishingScore += Math.min(
+    45,
+    matchedPhishing.length * 12
+  );
 
+  /* Suspicious URLs */
+  phishingScore += Math.min(
+    35,
+    suspiciousUrls.length * 25
+  );
+
+  /* Suspicious sender */
   if (senderLooksOff) {
-    phishingScore += 15;
+    phishingScore += 10;
   }
 
+  /* Brand impersonation */
   if (matchedLookalikeBrands.length > 0) {
-    phishingScore += 30;
+    phishingScore += 35;
   }
 
-  phishingScore += matchedUrgency.length * 4;
-  phishingScore += matchedCredentials.length * 5;
+  /* Credential harvesting */
+  phishingScore += Math.min(
+    30,
+    matchedCredentials.length * 10
+  );
 
-  const hasVerification =
-    text.includes("verify") ||
-    text.includes("verification") ||
-    text.includes("confirm your account") ||
-    text.includes("confirm your identity");
+  /* Financial language */
+  phishingScore += Math.min(
+    24,
+    matchedFinancial.length * 6
+  );
 
-  const hasThreat =
-    text.includes("suspended") ||
-    text.includes("blocked") ||
-    text.includes("locked") ||
-    text.includes("restricted") ||
-    text.includes("terminated") ||
-    text.includes("closure");
+  /* Social engineering */
+  phishingScore += Math.min(
+    24,
+    matchedSocialEngineering.length * 12
+  );
 
-  if (hasVerification && matchedUrgency.length > 0) {
+  /* Suspicious actions */
+  phishingScore += Math.min(
+    20,
+    matchedSuspiciousActions.length * 8
+  );
+
+  /* Urgency alone is weak evidence */
+  phishingScore += Math.min(
+    12,
+    matchedUrgency.length * 3
+  );
+
+
+  /* =========================================================
+     CONTEXT COMBINATIONS
+     ========================================================= */
+
+  /* Verification + urgency */
+  if (
+    hasVerification &&
+    matchedUrgency.length > 0
+  ) {
+    phishingScore += 18;
+  }
+
+  /* Verification + threat */
+  if (
+    hasVerification &&
+    hasThreat
+  ) {
+    phishingScore += 22;
+  }
+
+  /* Financial + pressure */
+  if (
+    hasPaymentLanguage &&
+    hasPressure
+  ) {
+    phishingScore += 18;
+  }
+
+  /* Financial + payment action + pressure */
+  if (
+    hasPaymentLanguage &&
+    hasPaymentAction &&
+    hasPressure
+  ) {
+    phishingScore += 18;
+  }
+
+  /* Sensitive information + pressure */
+  if (
+    hasSensitiveRequest &&
+    hasPressure
+  ) {
+    phishingScore += 18;
+  }
+
+  /* Suspicious URL + verification/payment */
+  if (
+    suspiciousUrls.length > 0 &&
+    (
+      hasVerification ||
+      hasPaymentLanguage
+    )
+  ) {
     phishingScore += 20;
   }
 
-  if (hasVerification && hasThreat) {
+  /* Brand impersonation + sensitive action */
+  if (
+    matchedLookalikeBrands.length > 0 &&
+    (
+      hasVerification ||
+      hasSensitiveRequest
+    )
+  ) {
     phishingScore += 20;
   }
+
+  /* Strong financial scam */
+  if (
+    hasPaymentLanguage &&
+    hasPressure &&
+    (
+      hasPaymentAction ||
+      hasSensitiveRequest ||
+      suspiciousUrls.length > 0
+    )
+  ) {
+    phishingScore += 12;
+  }
+
+  phishingScore =
+    Math.min(
+      97,
+      Math.round(phishingScore)
+    );
+
+
+  /* =========================================================
+     STRONG PHISHING CONTEXT
+     ========================================================= */
+
+  const strongPhishingContext =
+
+    suspiciousUrls.length > 0 ||
+
+    matchedLookalikeBrands.length > 0 ||
+
+    (
+      hasPaymentLanguage &&
+      hasPressure &&
+      (
+        hasPaymentAction ||
+        hasSensitiveRequest
+      )
+    ) ||
+
+    (
+      hasVerification &&
+      (
+        hasThreat ||
+        hasSensitiveRequest
+      )
+    ) ||
+
+    (
+      matchedSocialEngineering.length > 0 &&
+      hasPressure
+    );
+  /* =========================================================
+     SPAM SCORE
+     ========================================================= */
 
   let spamScore = 0;
 
-  spamScore += matchedSpam.length * 7;
 
-  if (matchedSpam.length >= 2) {
-    spamScore += 10;
+  /* ---------------------------------------------------------
+     Helper: check whether any phrase exists
+     --------------------------------------------------------- */
+
+  function hasAnySpamPhrase(text, phrases) {
+    return phrases.some(function (phrase) {
+      return text.includes(phrase);
+    });
   }
 
+
+  /* ---------------------------------------------------------
+     1. DIRECT SPAM / PROMOTIONAL KEYWORDS
+     --------------------------------------------------------- */
+
+  const spamMatches = spamKeywords.filter(function (keyword) {
+    return text.includes(
+      normalizeText(keyword)
+    );
+  });
+
+
+  spamScore += Math.min(
+    50,
+    spamMatches.length * 15
+  );
+
+
+  /* ---------------------------------------------------------
+     2. PROMOTIONAL LANGUAGE
+     --------------------------------------------------------- */
+
+  const promotionalPhrases = [
+
+    "sale",
+    "sales",
+    "discount",
+    "deal",
+    "coupon",
+    "promotion",
+    "promotional",
+    "special offer",
+    "exclusive offer",
+    "limited time",
+    "limited time offer",
+    "free gift",
+    "bonus",
+    "reward",
+    "cashback",
+    "clearance",
+    "mega sale",
+    "flash sale",
+    "festive sale",
+    "holiday sale",
+    "special deal",
+    "best deal",
+    "huge discount",
+    "big discount",
+    "free shipping",
+    "save money",
+    "save big",
+    "great savings",
+    "massive savings"
+  ];
+
+
+  const hasPromotionalLanguage =
+    hasAnySpamPhrase(
+      text,
+      promotionalPhrases
+    );
+
+
+  if (hasPromotionalLanguage) {
+    spamScore += 20;
+  }
+
+
+  /* ---------------------------------------------------------
+     3. MARKETING / NEWSLETTER
+     --------------------------------------------------------- */
+
+  const marketingPhrases = [
+
+    "newsletter",
+    "marketing",
+    "advertisement",
+    "advertising",
+    "marketing campaign",
+    "promotional campaign",
+    "promotional email",
+    "subscribe",
+    "unsubscribe",
+    "mailing list",
+    "offers",
+    "promotions",
+    "new products",
+    "latest products",
+    "featured products",
+    "product update",
+    "special promotion",
+    "customer offer"
+  ];
+
+
+  const hasMarketingLanguage =
+    hasAnySpamPhrase(
+      text,
+      marketingPhrases
+    );
+
+
+  if (hasMarketingLanguage) {
+    spamScore += 20;
+  }
+
+
+  /* ---------------------------------------------------------
+     4. COMMERCIAL CALL TO ACTION
+     --------------------------------------------------------- */
+
+  const commercialPhrases = [
+
+    "buy now",
+    "shop now",
+    "order now",
+    "subscribe now",
+    "claim now",
+    "click here",
+    "join now",
+    "get yours",
+    "book now",
+    "start saving",
+    "save now",
+    "learn more",
+    "get started",
+    "purchase now",
+    "grab yours",
+    "don't miss",
+    "do not miss",
+    "shop today",
+    "buy today",
+    "order today",
+    "claim your offer",
+    "get your offer",
+    "redeem now",
+    "redeem your offer"
+  ];
+
+
+  const hasCommercialAction =
+    hasAnySpamPhrase(
+      text,
+      commercialPhrases
+    );
+
+
+  if (hasCommercialAction) {
+    spamScore += 20;
+  }
+
+
+  /* ---------------------------------------------------------
+     5. PROMOTIONAL PRESSURE
+     --------------------------------------------------------- */
+
+  const promotionalPressurePhrases = [
+
+    "limited time",
+    "act now",
+    "don't miss",
+    "do not miss",
+    "hurry",
+    "ends soon",
+    "offer expires",
+    "expires soon",
+    "today only",
+    "this weekend only",
+    "last chance",
+    "final hours",
+    "while supplies last",
+    "only today",
+    "ending soon",
+    "don't wait",
+    "do not wait"
+  ];
+
+
+  const hasPromotionalPressure =
+    hasAnySpamPhrase(
+      text,
+      promotionalPressurePhrases
+    );
+
+
+  if (hasPromotionalPressure) {
+    spamScore += 15;
+  }
+
+
+  /* ---------------------------------------------------------
+     6. UNSUBSCRIBE
+     --------------------------------------------------------- */
+
   if (
-    text.includes("offer") &&
-    (
-      text.includes("sale") ||
-      text.includes("discount") ||
-      text.includes("deal") ||
-      text.includes("shop")
+    text.includes("unsubscribe")
+  ) {
+    spamScore += 15;
+  }
+
+
+  /* ---------------------------------------------------------
+     7. DISCOUNT PERCENTAGE
+     --------------------------------------------------------- */
+
+  const hasDiscountPercentage =
+    /\b\d{1,3}\s*%\s*(off|discount)\b/i.test(
+      text
+    );
+
+
+  if (hasDiscountPercentage) {
+    spamScore += 20;
+  }
+
+
+  /* ---------------------------------------------------------
+     8. MONEY SAVING LANGUAGE
+     --------------------------------------------------------- */
+
+  const moneySavingPhrases = [
+
+    "save $",
+    "save ₹",
+    "save rs",
+    "save up to",
+    "save upto",
+    "get $",
+    "get ₹",
+    "only $",
+    "only ₹",
+    "starting at",
+    "special price",
+    "lowest price",
+    "best price",
+    "cheap price",
+    "exclusive price"
+  ];
+
+
+  if (
+    hasAnySpamPhrase(
+      text,
+      moneySavingPhrases
     )
   ) {
     spamScore += 15;
   }
 
-  if (
-    text.includes("buy now") ||
-    text.includes("shop now") ||
-    text.includes("subscribe now") ||
-    text.includes("coupon code") ||
-    text.includes("promo code")
-  ) {
+
+  /* ---------------------------------------------------------
+     9. PROMOTIONAL SUBJECT
+     --------------------------------------------------------- */
+
+  const promotionalSubjectPhrases = [
+
+    "sale",
+    "discount",
+    "offer",
+    "deal",
+    "coupon",
+    "cashback",
+    "reward",
+    "promotion",
+    "free",
+    "bonus",
+    "shopping",
+    "save",
+    "special price",
+    "limited time",
+    "exclusive"
+  ];
+
+
+  const promotionalSubject =
+    hasAnySpamPhrase(
+      subject,
+      promotionalSubjectPhrases
+    );
+
+
+  if (promotionalSubject) {
     spamScore += 10;
   }
 
-  phishingScore = Math.min(phishingScore, 97);
-  spamScore = Math.min(spamScore, 95);
 
-  const indicatorCount =
-    matchedPhishing.length +
-    matchedSpam.length +
-    matchedUrgency.length +
-    matchedCredentials.length +
-    suspiciousUrls.length +
-    (senderLooksOff ? 1 : 0) +
-    (matchedLookalikeBrands.length > 0 ? 1 : 0);
+  /* ---------------------------------------------------------
+     10. STRONG SPAM COMBINATIONS
+     --------------------------------------------------------- */
+
+  /*
+     Promotion + commercial action
+  */
+
+  if (
+    hasPromotionalLanguage &&
+    hasCommercialAction
+  ) {
+    spamScore += 20;
+  }
+
+
+  /*
+     Marketing + promotion
+  */
+
+  if (
+    hasMarketingLanguage &&
+    hasPromotionalLanguage
+  ) {
+    spamScore += 15;
+  }
+
+
+  /*
+     Promotion + urgency
+  */
+
+  if (
+    hasPromotionalLanguage &&
+    hasPromotionalPressure
+  ) {
+    spamScore += 15;
+  }
+
+
+  /*
+     Marketing + commercial action
+  */
+
+  if (
+    hasMarketingLanguage &&
+    hasCommercialAction
+  ) {
+    spamScore += 15;
+  }
+
+
+  /*
+     Discount + commercial action
+  */
+
+  if (
+    hasDiscountPercentage &&
+    hasCommercialAction
+  ) {
+    spamScore += 15;
+  }
+
+
+  /* ---------------------------------------------------------
+     FINAL SPAM SCORE
+     --------------------------------------------------------- */
+
+  spamScore = Math.min(
+    95,
+    Math.round(spamScore)
+  );
+  /* =========================================================
+     FINAL CLASSIFICATION
+     ========================================================= */
 
   let verdict = "legitimate";
-  let riskScore = 3;
-  let confidence = 95;
 
-  if (phishingScore >= 50) {
+  let riskScore = 3;
+
+  let confidence = 94;
+
+  /* ---------------------------------------------------------
+     PHISHING
+     --------------------------------------------------------- */
+  /* ---------------------------------------------------------
+     PHISHING
+     --------------------------------------------------------- */
+
+  if (
+    phishingScore >= 50 ||
+    strongPhishingContext
+  ) {
+
     verdict = "phishing";
-    riskScore = phishingScore;
+
+    riskScore = Math.max(
+      50,
+      phishingScore
+    );
+
+    const evidenceCount =
+      matchedPhishing.length +
+      matchedCredentials.length +
+      matchedFinancial.length +
+      matchedSocialEngineering.length +
+      suspiciousUrls.length +
+      matchedLookalikeBrands.length;
 
     confidence = Math.min(
       99,
-      85 +
-      matchedPhishing.length * 2 +
-      matchedLookalikeBrands.length * 2 +
-      suspiciousUrls.length * 2
-    );
-  } else if (spamScore >= 30) {
-    verdict = "spam";
-    riskScore = Math.min(95, 20 + spamScore);
-
-    confidence = Math.min(
-      97,
-      82 + matchedSpam.length * 2
-    );
-  } else {
-    const keywordRisk =
-      matchedPhishing.length * 5 +
-      matchedSpam.length * 3 +
-      matchedUrgency.length * 4 +
-      matchedCredentials.length * 5;
-
-    const urlRisk = suspiciousUrls.length * 12;
-    const senderRisk = senderLooksOff ? 8 : 0;
-    const brandRisk = matchedLookalikeBrands.length > 0 ? 12 : 0;
-
-    const combinedRisk =
-      keywordRisk +
-      urlRisk +
-      senderRisk +
-      brandRisk +
-      Math.round(phishingScore * 0.2) +
-      Math.round(spamScore * 0.15);
-
-    riskScore = Math.min(
-      49,
-      Math.max(3, Math.round(combinedRisk))
-    );
-
-    confidence = Math.min(
-      97,
-      Math.max(65, 96 - Math.round(riskScore * 0.6))
+      Math.max(
+        82,
+        82 +
+        evidenceCount * 2 +
+        (hasPressure ? 3 : 0)
+      )
     );
   }
 
+
+  /* ---------------------------------------------------------
+     SPAM
+     --------------------------------------------------------- */
+
+  else if (spamScore >= 25) {
+
+    verdict = "spam";
+
+    riskScore = Math.min(
+      95,
+      Math.max(
+        30,
+        spamScore
+      )
+    );
+
+    confidence = Math.min(
+      97,
+      Math.max(
+        78,
+        80 +
+        spamMatches.length * 3
+      )
+    );
+  }
+
+
+  /* ---------------------------------------------------------
+     LEGITIMATE
+     --------------------------------------------------------- */
+
+  else {
+
+    const weakRisk =
+      Math.min(
+        15,
+        matchedPhishing.length * 3
+      ) +
+
+      Math.min(
+        8,
+        matchedUrgency.length * 2
+      ) +
+
+      Math.min(
+        8,
+        matchedFinancial.length * 2
+      ) +
+
+      Math.min(
+        8,
+        matchedCredentials.length * 2
+      ) +
+
+      Math.min(
+        8,
+        suspiciousUrls.length * 3
+      ) +
+
+      (senderLooksOff ? 5 : 0);
+
+    riskScore = Math.min(
+      49,
+      Math.max(
+        3,
+        Math.round(weakRisk)
+      )
+    );
+
+    confidence = Math.min(
+      97,
+      Math.max(
+        65,
+        96 - Math.round(
+          riskScore * 0.5
+        )
+      )
+    );
+  }
+  /* =========================================================
+     DETECTION REASONS
+     ========================================================= */
+
   const reasons = [];
 
-  if (matchedPhishing.length > 0) {
+  if (
+    matchedPhishing.length > 0
+  ) {
     reasons.push(
       `Phishing-related keywords detected: ${matchedPhishing.join(", ")}`
     );
   }
 
-  if (matchedSpam.length > 0) {
+  if (
+    matchedSpam.length > 0
+  ) {
     reasons.push(
       `Spam-related keywords detected: ${matchedSpam.join(", ")}`
     );
   }
 
-  if (matchedUrgency.length > 0) {
+  if (
+    matchedUrgency.length > 0
+  ) {
     reasons.push(
       `Urgency indicators detected: ${matchedUrgency.join(", ")}`
     );
   }
 
-  if (matchedCredentials.length > 0) {
+  if (
+    matchedCredentials.length > 0
+  ) {
     reasons.push(
       `Credential-related terms detected: ${matchedCredentials.join(", ")}`
     );
   }
 
-  if (suspiciousUrls.length > 0) {
+  if (
+    matchedFinancial.length > 0
+  ) {
+    reasons.push(
+      `Financial/payment language detected: ${matchedFinancial.join(", ")}`
+    );
+  }
+
+  if (
+    matchedSocialEngineering.length > 0
+  ) {
+    reasons.push(
+      `Social-engineering language detected: ${matchedSocialEngineering.join(", ")}`
+    );
+  }
+
+  if (
+    matchedSuspiciousActions.length > 0
+  ) {
+    reasons.push(
+      `Suspicious action phrases detected: ${matchedSuspiciousActions.join(", ")}`
+    );
+  }
+
+  if (
+    hasPaymentLanguage &&
+    hasPressure
+  ) {
+    reasons.push(
+      "Financial language is combined with urgency or pressure."
+    );
+  }
+
+  if (
+    hasVerification &&
+    hasThreat
+  ) {
+    reasons.push(
+      "Verification language is combined with an account-access consequence."
+    );
+  }
+
+  if (
+    hasSensitiveRequest &&
+    hasPressure
+  ) {
+    reasons.push(
+      "A request for sensitive information is combined with pressure to act."
+    );
+  }
+
+  if (
+    suspiciousUrls.length > 0
+  ) {
     reasons.push(
       `${suspiciousUrls.length} suspicious URL(s) detected`
     );
   }
 
-  if (senderLooksOff) {
-    reasons.push("Sender format appears unusual");
+  if (
+    senderLooksOff
+  ) {
+    reasons.push(
+      "Sender format or domain pattern appears unusual"
+    );
   }
 
-  if (matchedLookalikeBrands.length > 0) {
+  if (
+    matchedLookalikeBrands.length > 0
+  ) {
     reasons.push(
       `Possible brand impersonation detected: ${matchedLookalikeBrands.join(", ")}`
     );
   }
 
-  if (urlMatches.length === 0) {
-    reasons.push("No URLs detected in the email body");
+  if (
+    urlMatches.length === 0
+  ) {
+    reasons.push(
+      "No URLs detected in the email body"
+    );
   }
 
-  if (verdict === "legitimate") {
-    if (indicatorCount === 0) {
+  if (
+    verdict === "legitimate"
+  ) {
+
+    if (
+      reasons.length === 0 ||
+      (
+        matchedFinancial.length === 0 &&
+        matchedPhishing.length === 0 &&
+        matchedUrgency.length === 0 &&
+        matchedCredentials.length === 0 &&
+        suspiciousUrls.length === 0 &&
+        !senderLooksOff
+      )
+    ) {
+
       reasons.push(
-        "No suspicious phishing, spam, sender, or URL indicators detected"
+        "No strong phishing or spam indicators detected"
       );
+
     } else {
+
       reasons.push(
-        "Weak indicators were detected, but phishing and spam thresholds were not reached"
+        "Some weak indicators were detected, but the phishing/spam thresholds were not reached."
       );
     }
   }
 
-  if (reasons.length === 0) {
-    reasons.push("No significant indicators detected");
+  if (
+    verdict === "spam"
+  ) {
+    reasons.push(
+      "Promotional/spam indicators are present without enough evidence of credential theft or deceptive account/payment action."
+    );
   }
 
+  if (
+    reasons.length === 0
+  ) {
+    reasons.push(
+      "No significant indicators detected"
+    );
+  }
+
+
+  /* =========================================================
+     RETURN RESULT
+     ========================================================= */
+
   return {
+
     verdict,
+
     riskScore,
+
     confidence,
+
     reasons,
+
     matchedPhishing,
+
     matchedSpam,
+
     matchedUrgency,
+
     matchedCredentials,
+
+    matchedFinancial,
+
+    matchedSocialEngineering,
+
+    matchedSuspiciousActions,
+
     matchedLookalikeBrands,
+
     urlMatches,
+
     suspiciousUrls,
+
     senderDomain,
+
     phishingScore,
+
     spamScore
   };
 }
 
 
 /* =========================================================
-   HELPERS
+   TEXT HELPERS
    ========================================================= */
 
-function findMatches(text, keywords) {
-  return keywords.filter(function (keyword) {
-    return text.includes(keyword.toLowerCase());
-  });
+function normalizeText(value) {
+
+  return String(value || "")
+    .toLowerCase()
+    .replace(/[“”‘’]/g, "'")
+    .replace(/[^a-z0-9@._:/-]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
-function isSuspiciousUrl(url) {
-  try {
-    const parsedUrl = new URL(url);
-    const hostname = parsedUrl.hostname.toLowerCase();
+function containsPhrase(text, phrase) {
 
-    const hasIpAddress =
-      /^\d{1,3}(\.\d{1,3}){3}$/.test(hostname);
+  const normalizedText =
+    normalizeText(text);
 
-    const hasPunycode = hostname.includes("xn--");
+  const normalizedPhrase =
+    normalizeText(phrase);
 
-    const suspiciousTerms = [
-      "verify-",
-      "-verify",
-      "secure-",
-      "-secure",
-      "account-",
-      "-account",
-      "login-",
-      "-login",
-      "update-",
-      "-update"
-    ];
-
-    const hasSuspiciousTerm = suspiciousTerms.some(function (term) {
-      return hostname.includes(term);
-    });
-
-    return (
-      hasIpAddress ||
-      hasPunycode ||
-      hasSuspiciousTerm
-    );
-  } catch (error) {
-    return true;
-  }
-}
-
-function getSenderDomain(sender) {
-  if (!sender.includes("@")) {
-    return "Unknown";
-  }
-
-  return sender.split("@")[1];
-}
-
-function isUnusualSender(sender) {
-  if (!sender) {
+  if (!normalizedPhrase) {
     return false;
   }
 
-  const localPart = sender.split("@")[0] || "";
-  const domain = getSenderDomain(sender);
+  const escaped =
+    normalizedPhrase.replace(
+      /[.*+?^${}()|[\]\\]/g,
+      "\\$&"
+    );
 
-  const hasManyNumbers =
-    (localPart.match(/\d/g) || []).length >= 4;
+  const pattern =
+    new RegExp(
+      `(?:^|\\s)${escaped}(?=\\s|[.,!?;:()"'/%]|$)`,
+      "i"
+    );
 
-  const hasRepeatedHyphens = domain.includes("--");
-
-  const hasSuspiciousDomainPattern =
-    domain.startsWith("-") ||
-    domain.endsWith("-") ||
-    domain.includes("secure-login") ||
-    domain.includes("account-verify");
-
-  return (
-    hasManyNumbers ||
-    hasRepeatedHyphens ||
-    hasSuspiciousDomainPattern
+  return pattern.test(
+    normalizedText
   );
 }
 
-function isValidEmail(email) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+function findMatches(
+  text,
+  keywords
+) {
+
+  return keywords.filter(
+    function (keyword) {
+
+      return containsPhrase(
+        text,
+        keyword
+      );
+
+    }
+  );
 }
 
 
 /* =========================================================
-   RESULTS
+   URL ANALYSIS
    ========================================================= */
 
+function isSuspiciousUrl(url) {
+
+  try {
+
+    const cleanUrl =
+      String(url).replace(
+        /[.,!?;:]+$/g,
+        ""
+      );
+
+    const parsedUrl =
+      new URL(
+        cleanUrl.startsWith("www.")
+          ? `https://${cleanUrl}`
+          : cleanUrl
+      );
+
+    const hostname =
+      parsedUrl.hostname.toLowerCase();
+
+
+    /* IP address URL */
+
+    const hasIpAddress =
+      /^(?:\d{1,3}\.){3}\d{1,3}$/
+        .test(hostname);
+
+
+    /* Punycode */
+
+    const hasPunycode =
+      hostname.includes("xn--");
+
+
+    /* Suspicious domain terms */
+
+    const suspiciousTerms = [
+
+      "verify-",
+      "-verify",
+
+      "secure-",
+      "-secure",
+
+      "account-",
+      "-account",
+
+      "login-",
+      "-login",
+
+      "update-",
+      "-update",
+
+      "support-",
+      "-support",
+
+      "billing-",
+      "-billing",
+
+      "payment-",
+      "-payment"
+    ];
+
+    const hasSuspiciousTerm =
+      suspiciousTerms.some(
+        function (term) {
+
+          return hostname.includes(
+            term
+          );
+
+        }
+      );
+
+
+    /* Deep subdomain */
+
+    const hostnameParts =
+      hostname.split(".");
+
+    const hasVeryLongSubdomain =
+      hostnameParts.length >= 5;
+
+
+    /* @ inside URL */
+
+    const hasAtSymbol =
+      cleanUrl.includes("@");
+
+
+    return (
+
+      hasIpAddress ||
+
+      hasPunycode ||
+
+      hasSuspiciousTerm ||
+
+      hasVeryLongSubdomain ||
+
+      hasAtSymbol
+
+    );
+
+  } catch (error) {
+
+    return true;
+  }
+}
+
+
+/* =========================================================
+   SENDER HELPERS
+   ========================================================= */
+
+function getSenderDomain(sender) {
+
+  if (!sender.includes("@")) {
+    return "Unknown";
+  }
+
+  return sender
+    .split("@")
+    .slice(1)
+    .join("@");
+}
+
+
+function isUnusualSender(sender) {
+
+  if (!sender) {
+    return false;
+  }
+
+  const localPart =
+    sender.split("@")[0] || "";
+
+  const domain =
+    getSenderDomain(sender);
+
+
+  /* Too many numbers */
+
+  const hasManyNumbers =
+    (localPart.match(/\d/g) || [])
+      .length >= 4;
+
+
+  /* Repeated hyphens */
+
+  const hasRepeatedHyphens =
+    domain.includes("--");
+
+
+  /* Suspicious domain structures */
+
+  const hasSuspiciousDomainPattern =
+
+    domain.startsWith("-") ||
+
+    domain.endsWith("-") ||
+
+    domain.includes("secure-login") ||
+
+    domain.includes("account-verify");
+
+
+  return (
+
+    hasManyNumbers ||
+
+    hasRepeatedHyphens ||
+
+    hasSuspiciousDomainPattern
+
+  );
+}
+
+
+function isValidEmail(email) {
+
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    .test(email);
+}
+
+
+/* =========================================================
+   RENDER RESULTS
+   ========================================================= */
 
 function renderResults(result) {
+
   if (resultEmpty) {
-    resultEmpty.style.display = "none";
+
+    resultEmpty.style.display =
+      "none";
   }
 
   if (resultContent) {
-    resultContent.style.display = "block";
+
+    resultContent.style.display =
+      "block";
   }
 
+
+  /* Verdict */
+
   if (verdictRow) {
-    verdictRow.className = `verdict-row ${result.verdict}`;
+
+    verdictRow.className =
+      `verdict-row ${result.verdict}`;
   }
 
   if (verdictValue) {
-    verdictValue.textContent = result.verdict.toUpperCase();
+
+    verdictValue.textContent =
+      result.verdict.toUpperCase();
   }
 
+
+  /* Scores */
+
   if (riskScoreEl) {
-    riskScoreEl.textContent = `${result.riskScore}%`;
+
+    riskScoreEl.textContent =
+      `${result.riskScore}%`;
   }
 
   if (confidenceScoreEl) {
-    confidenceScoreEl.textContent = `${result.confidence}%`;
+
+    confidenceScoreEl.textContent =
+      `${result.confidence}%`;
   }
 
+
+  /* URLs */
+
   if (urlsDetectedEl) {
-    urlsDetectedEl.textContent = result.urlMatches.length;
+
+    urlsDetectedEl.textContent =
+      result.urlMatches.length;
   }
 
   if (urlsSuspiciousEl) {
-    urlsSuspiciousEl.textContent = result.suspiciousUrls.length;
+
+    urlsSuspiciousEl.textContent =
+      result.suspiciousUrls.length;
   }
 
-  // Detection Reasons
+
+  /* Detection reasons */
+
   if (reasonList) {
+
     reasonList.innerHTML = "";
 
-    result.reasons.forEach(function (reason) {
-      const item = document.createElement("li");
-      item.textContent = reason;
-      reasonList.appendChild(item);
-    });
+    result.reasons.forEach(
+      function (reason) {
+
+        const item =
+          document.createElement("li");
+
+        item.textContent =
+          reason;
+
+        reasonList.appendChild(
+          item
+        );
+      }
+    );
   }
 
-  // Keyword Analysis
-  
+
+  /* =======================================================
+     KEYWORD ANALYSIS
+     ======================================================= */
+
   if (keywordList) {
+
     keywordList.innerHTML = "";
 
     const groups = [
+
       {
         title: "Phishing Keywords",
         values: result.matchedPhishing,
         className: "phishing"
       },
+
       {
         title: "Spam Keywords",
         values: result.matchedSpam,
         className: "spam"
       },
+
       {
         title: "Urgency Keywords",
         values: result.matchedUrgency,
         className: "urgency"
       },
+
       {
         title: "Credential Keywords",
         values: result.matchedCredentials,
         className: "credentials"
       },
+
+      {
+        title: "Financial Keywords",
+        values: result.matchedFinancial,
+        className: "financial"
+      },
+
+      {
+        title: "Social Engineering Keywords",
+        values: result.matchedSocialEngineering,
+        className: "social"
+      },
+
+      {
+        title: "Suspicious Action Keywords",
+        values: result.matchedSuspiciousActions,
+        className: "suspicious-action"
+      },
+
       {
         title: "Brand Indicators",
         values: result.matchedLookalikeBrands,
@@ -1151,50 +2212,99 @@ function renderResults(result) {
       }
     ];
 
+
     let hasKeywords = false;
 
-    groups.forEach(function (group) {
-      const uniqueValues = [...new Set(group.values || [])];
+    groups.forEach(
+      function (group) {
 
-      if (uniqueValues.length === 0) {
-        return;
+        const uniqueValues =
+          [
+            ...new Set(
+              group.values || []
+            )
+          ];
+
+        if (
+          uniqueValues.length === 0
+        ) {
+          return;
+        }
+
+        hasKeywords = true;
+
+        const groupContainer =
+          document.createElement("div");
+
+        groupContainer.className =
+          "keyword-group";
+
+
+        const heading =
+          document.createElement("div");
+
+        heading.textContent =
+          group.title;
+
+        heading.className =
+          "keyword-group-heading";
+
+        groupContainer.appendChild(
+          heading
+        );
+
+
+        const chipsContainer =
+          document.createElement("div");
+
+        chipsContainer.className =
+          "keyword-chips";
+
+
+        uniqueValues.forEach(
+          function (keyword) {
+
+            const item =
+              document.createElement("span");
+
+            item.textContent =
+              keyword;
+
+            item.className =
+              `keyword-chip flagged ${group.className}`;
+
+            chipsContainer.appendChild(
+              item
+            );
+          }
+        );
+
+
+        groupContainer.appendChild(
+          chipsContainer
+        );
+
+        keywordList.appendChild(
+          groupContainer
+        );
       }
+    );
 
-      hasKeywords = true;
-
-      // Create separate group container
-      const groupContainer = document.createElement("div");
-      groupContainer.className = "keyword-group";
-
-      // Create group heading
-      const heading = document.createElement("div");
-      heading.textContent = group.title;
-      heading.className = "keyword-group-heading";
-
-      groupContainer.appendChild(heading);
-
-      // Create chips container
-      const chipsContainer = document.createElement("div");
-      chipsContainer.className = "keyword-chips";
-
-      uniqueValues.forEach(function (keyword) {
-        const item = document.createElement("span");
-
-        item.textContent = keyword;
-        item.className = `keyword-chip flagged ${group.className}`;
-
-        chipsContainer.appendChild(item);
-      });
-
-      groupContainer.appendChild(chipsContainer);
-      keywordList.appendChild(groupContainer);
-    });
 
     if (!hasKeywords) {
-      const item = document.createElement("div");
-      item.textContent = "No matching keywords detected";
-      item.className = "keyword-empty";
-      keywordList.appendChild(item);
+
+      const item =
+        document.createElement("div");
+
+      item.textContent =
+        "No matching keywords detected";
+
+      item.className =
+        "keyword-empty";
+
+      keywordList.appendChild(
+        item
+      );
     }
   }
 }
@@ -1204,38 +2314,99 @@ function renderResults(result) {
    FORM ERRORS
    ========================================================= */
 
-function setFieldError(inputElement, message) {
+function setFieldError(
+  inputElement,
+  message
+) {
+
   if (!inputElement) {
     return;
   }
 
-  inputElement.classList.add("input-error");
-  inputElement.setAttribute("aria-invalid", "true");
+  inputElement.classList.add(
+    "input-error"
+  );
+
+  inputElement.setAttribute(
+    "aria-invalid",
+    "true"
+  );
+
 
   let errorElement =
-    inputElement.parentElement.querySelector(".field-error");
+
+    inputElement.parentElement
+      ? inputElement.parentElement
+        .querySelector(
+          ".field-error"
+        )
+      : null;
+
 
   if (!errorElement) {
-    errorElement = document.createElement("small");
-    errorElement.className = "field-error";
-    inputElement.parentElement.appendChild(errorElement);
+
+    errorElement =
+      document.createElement(
+        "small"
+      );
+
+    errorElement.className =
+      "field-error";
+
+    if (
+      inputElement.parentElement
+    ) {
+
+      inputElement.parentElement.appendChild(
+        errorElement
+      );
+    }
   }
 
-  errorElement.textContent = message;
+  errorElement.textContent =
+    message;
 }
+
 
 function clearFieldErrors() {
-  document.querySelectorAll(".input-error").forEach(function (element) {
-    element.classList.remove("input-error");
-    element.removeAttribute("aria-invalid");
-  });
 
-  document.querySelectorAll(".field-error").forEach(function (element) {
-    element.remove();
-  });
+  document
+    .querySelectorAll(
+      ".input-error"
+    )
+    .forEach(
+      function (element) {
+
+        element.classList.remove(
+          "input-error"
+        );
+
+        element.removeAttribute(
+          "aria-invalid"
+        );
+      }
+    );
+
+
+  document
+    .querySelectorAll(
+      ".field-error"
+    )
+    .forEach(
+      function (element) {
+
+        element.remove();
+      }
+    );
 }
 
+
+/* =========================================================
+   CLEAR FORM
+   ========================================================= */
+
 function clearForm() {
+
   if (form) {
     form.reset();
   }
@@ -1243,11 +2414,15 @@ function clearForm() {
   clearFieldErrors();
 
   if (resultEmpty) {
-    resultEmpty.style.display = "block";
+
+    resultEmpty.style.display =
+      "block";
   }
 
   if (resultContent) {
-    resultContent.style.display = "none";
+
+    resultContent.style.display =
+      "none";
   }
 
   lastAnalysis = null;
@@ -1259,41 +2434,77 @@ function clearForm() {
    ========================================================= */
 
 function loadImage(src) {
-  return new Promise(function (resolve) {
-    const image = new Image();
 
-    image.onload = function () {
-      resolve(image);
-    };
+  return new Promise(
+    function (resolve) {
 
-    image.onerror = function () {
-      resolve(null);
-    };
+      const image =
+        new Image();
 
-    image.src = src;
-  });
+      image.onload =
+        function () {
+          resolve(image);
+        };
+
+      image.onerror =
+        function () {
+          resolve(null);
+        };
+
+      image.src = src;
+    }
+  );
 }
 
-async function generateReport(analysis) {
-  if (!analysis || !window.jspdf || !window.jspdf.jsPDF) {
-    alert("PDF library is not loaded.");
+
+async function generateReport(
+  analysis
+) {
+
+  if (
+    !analysis ||
+    !window.jspdf ||
+    !window.jspdf.jsPDF
+  ) {
+
+    alert(
+      "PDF library is not loaded."
+    );
+
     return;
   }
 
-  const doc = new window.jspdf.jsPDF({
-    unit: "pt",
-    format: "a4"
-  });
+
+  const doc =
+    new window.jspdf.jsPDF({
+      unit: "pt",
+      format: "a4"
+    });
+
 
   const margin = 48;
-  const pageWidth = doc.internal.pageSize.getWidth();
-  const pageHeight = doc.internal.pageSize.getHeight();
-  const contentWidth = pageWidth - margin * 2;
+
+  const pageWidth =
+    doc.internal.pageSize.getWidth();
+
+  const pageHeight =
+    doc.internal.pageSize.getHeight();
+
+  const contentWidth =
+    pageWidth - margin * 2;
 
   let y = 105;
 
-  const input = analysis.input;
-  const result = analysis.result;
+  const input =
+    analysis.input;
+
+  const result =
+    analysis.result;
+
+
+  /* =======================================================
+     TEXT HELPER
+     ======================================================= */
 
   function addText(
     text,
@@ -1301,35 +2512,75 @@ async function generateReport(analysis) {
     style = "normal",
     gapAfter = 6
   ) {
-    doc.setFont("helvetica", style);
-    doc.setFontSize(size);
 
-    const lines = doc.splitTextToSize(
-      String(text || "Not provided"),
-      contentWidth
+    doc.setFont(
+      "helvetica",
+      style
     );
 
-    lines.forEach(function (line) {
-      if (y + size + 8 > pageHeight - margin) {
-        doc.addPage();
-        y = margin;
-      }
+    doc.setFontSize(
+      size
+    );
 
-      doc.text(line, margin, y);
-      y += size + 5;
-    });
+    const lines =
+      doc.splitTextToSize(
+        String(
+          text || "Not provided"
+        ),
+        contentWidth
+      );
+
+    lines.forEach(
+      function (line) {
+
+        if (
+          y + size + 8 >
+          pageHeight - margin
+        ) {
+
+          doc.addPage();
+
+          y = margin;
+        }
+
+        doc.text(
+          line,
+          margin,
+          y
+        );
+
+        y += size + 5;
+      }
+    );
 
     y += gapAfter;
   }
 
-  function addSectionHeading(text) {
-    addText(text, 12, "bold", 8);
+
+  function addSectionHeading(
+    text
+  ) {
+
+    addText(
+      text,
+      12,
+      "bold",
+      8
+    );
   }
 
-  // Load logo
-  const logo = await loadImage("assests/cluewell-mail.png");
+
+  /* =======================================================
+     LOGO
+     ======================================================= */
+
+  const logo =
+    await loadImage(
+      "assests/cluewell-mail.png"
+    );
 
   if (logo) {
+
     doc.addImage(
       logo,
       "PNG",
@@ -1340,9 +2591,19 @@ async function generateReport(analysis) {
     );
   }
 
-  // Title
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(20);
+
+  /* =======================================================
+     TITLE
+     ======================================================= */
+
+  doc.setFont(
+    "helvetica",
+    "bold"
+  );
+
+  doc.setFontSize(
+    20
+  );
 
   doc.text(
     "ClueWell-Mail",
@@ -1350,9 +2611,15 @@ async function generateReport(analysis) {
     65
   );
 
-  // Subtitle
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(13);
+
+  doc.setFont(
+    "helvetica",
+    "normal"
+  );
+
+  doc.setFontSize(
+    13
+  );
 
   doc.text(
     "Email Threat Analysis Report",
@@ -1360,11 +2627,16 @@ async function generateReport(analysis) {
     85
   );
 
-  // Start content below header
   y = 125;
 
-  // Email Details
-  addSectionHeading("Email Details");
+
+  /* =======================================================
+     EMAIL DETAILS
+     ======================================================= */
+
+  addSectionHeading(
+    "Email Details"
+  );
 
   addText(
     `Sender: ${input.sender || "Not provided"}`
@@ -1381,8 +2653,14 @@ async function generateReport(analysis) {
     12
   );
 
-  // Verdict and Scoring
-  addSectionHeading("Verdict and Scoring");
+
+  /* =======================================================
+     VERDICT
+     ======================================================= */
+
+  addSectionHeading(
+    "Verdict and Scoring"
+  );
 
   addText(
     `Verdict: ${result.verdict.toUpperCase()}`,
@@ -1409,22 +2687,37 @@ async function generateReport(analysis) {
     12
   );
 
-  // Detection Reasons
-  addSectionHeading("Detection Reasons");
 
-  result.reasons.forEach(function (reason) {
-    addText(
-      `• ${reason}`,
-      10,
-      "normal",
-      2
-    );
-  });
+  /* =======================================================
+     DETECTION REASONS
+     ======================================================= */
+
+  addSectionHeading(
+    "Detection Reasons"
+  );
+
+  result.reasons.forEach(
+    function (reason) {
+
+      addText(
+        `• ${reason}`,
+        10,
+        "normal",
+        2
+      );
+    }
+  );
 
   y += 8;
 
-  // URL Analysis
-  addSectionHeading("URL Analysis");
+
+  /* =======================================================
+     URL ANALYSIS
+     ======================================================= */
+
+  addSectionHeading(
+    "URL Analysis"
+  );
 
   addText(
     `URLs Detected: ${result.urlMatches.length}`
@@ -1434,63 +2727,107 @@ async function generateReport(analysis) {
     `Suspicious URLs: ${result.suspiciousUrls.length}`
   );
 
-  if (result.urlMatches.length > 0) {
-    result.urlMatches.forEach(function (url) {
-      const status = result.suspiciousUrls.includes(url)
-        ? "Suspicious"
-        : "Not flagged";
 
-      addText(
-        `${url} — ${status}`,
-        9,
-        "normal",
-        2
-      );
-    });
+  if (
+    result.urlMatches.length > 0
+  ) {
+
+    result.urlMatches.forEach(
+      function (url) {
+
+        const status =
+          result.suspiciousUrls.includes(
+            url
+          )
+            ? "Suspicious"
+            : "Not flagged";
+
+        addText(
+          `${url} — ${status}`,
+          9,
+          "normal",
+          2
+        );
+      }
+    );
+
   } else {
-    addText("No URLs detected.");
+
+    addText(
+      "No URLs detected."
+    );
   }
 
   y += 8;
 
-  // Keyword Analysis
-  addSectionHeading("Keyword Analysis");
+
+  /* =======================================================
+     KEYWORD ANALYSIS
+     ======================================================= */
+
+  addSectionHeading(
+    "Keyword Analysis"
+  );
 
   addText(
-    `Phishing Keywords: ${
-      result.matchedPhishing.join(", ") || "None"
+    `Phishing Keywords: ${result.matchedPhishing.join(", ") ||
+    "None"
     }`
   );
 
   addText(
-    `Spam Keywords: ${
-      result.matchedSpam.join(", ") || "None"
+    `Spam Keywords: ${result.matchedSpam.join(", ") ||
+    "None"
     }`
   );
 
   addText(
-    `Urgency Keywords: ${
-      result.matchedUrgency.join(", ") || "None"
+    `Urgency Keywords: ${result.matchedUrgency.join(", ") ||
+    "None"
     }`
   );
 
   addText(
-    `Credential Keywords: ${
-      result.matchedCredentials.join(", ") || "None"
+    `Credential Keywords: ${result.matchedCredentials.join(", ") ||
+    "None"
     }`
   );
 
   addText(
-    `Possible Brand Indicators: ${
-      result.matchedLookalikeBrands.join(", ") || "None"
+    `Financial Keywords: ${(result.matchedFinancial || []).join(", ") ||
+    "None"
+    }`
+  );
+
+  addText(
+    `Social Engineering Keywords: ${(result.matchedSocialEngineering || []).join(", ") ||
+    "None"
+    }`
+  );
+
+  addText(
+    `Suspicious Action Keywords: ${(result.matchedSuspiciousActions || []).join(", ") ||
+    "None"
+    }`
+  );
+
+  addText(
+    `Possible Brand Indicators: ${result.matchedLookalikeBrands.join(", ") ||
+    "None"
     }`,
     10,
     "normal",
     12
   );
 
-  // Disclaimer
-  addSectionHeading("Disclaimer");
+
+  /* =======================================================
+     DISCLAIMER
+     ======================================================= */
+
+  addSectionHeading(
+    "Disclaimer"
+  );
 
   addText(
     "ClueWell Mail uses client-side keyword and rule-based analysis. The result is an indication only and should not be treated as a guaranteed security decision.",
@@ -1499,9 +2836,19 @@ async function generateReport(analysis) {
     5
   );
 
-  // Footer - Generated Date and Time
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(8);
+
+  /* =======================================================
+     FOOTER
+     ======================================================= */
+
+  doc.setFont(
+    "helvetica",
+    "normal"
+  );
+
+  doc.setFontSize(
+    8
+  );
 
   const generatedText =
     `Generated: ${new Date().toLocaleString()}`;
@@ -1515,6 +2862,12 @@ async function generateReport(analysis) {
     }
   );
 
-  // Save PDF
-  doc.save("ClueWell-Mail-report.pdf");
+
+  /* =======================================================
+     SAVE PDF
+     ======================================================= */
+
+  doc.save(
+    "ClueWell-Mail-report.pdf"
+  );
 }
