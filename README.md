@@ -23,11 +23,13 @@ Email Input → Rule Analysis → URL & Keyword Detection → Risk Scoring → V
 ## Important
 ClueWell Mail uses a JavaScript-based rule detection engine. It does not use machine learning or an AI model.
 
-## Team 
+## Team Members
 
-<h1>Vansh Arora</h1>  
-B.Tech CSE — Cybersecurity(Leader and Head Developer)
-<h1>Nitin Singh</h1>
-B.Tech CSE — AIML(Frontend Developer)
-<h1>Danish</h1>
-B.Tech CSE — AIML(Testing Team and Documentation Lead)
+**Vansh Arora**  
+B.Tech CSE — Cybersecurity | Team Leader & Head Developer
+
+**Nitin Singh**  
+B.Tech CSE — AIML | Frontend Developer
+
+**Danish**  
+B.Tech CSE — AIML | Testing & Documentation Lead
